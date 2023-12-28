@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "83CB2439-4ACB-4AF3-9565-CD5235BD979C"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "2E5EA234-A520-48DC-BE5C-2C83B2C7C1A8"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Zenix-iOS/Zenix/Sources/NetworkClient/Services/AuthorizationService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "47"
+            endingLineNumber = "47"
+            landmarkName = "refreshToken()"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "2E5EA234-A520-48DC-BE5C-2C83B2C7C1A8 - ca466a359e12f175"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for NetworkClient.AuthorizationService.refreshToken() async throws -&gt; Swift.String"
+                  moduleName = "Zenix-iOS"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/itsonev/Developer/iOS/Zenix-iOS/Zenix-iOS/Zenix/Sources/NetworkClient/Services/AuthorizationService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "47"
+                  endingLineNumber = "47"
+                  offsetFromSymbolStart = "116">
+               </Location>
+               <Location
+                  uuid = "2E5EA234-A520-48DC-BE5C-2C83B2C7C1A8 - 3b27e1e73375ad77"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(3) suspend resume partial function for NetworkClient.AuthorizationService.refreshToken() async throws -&gt; Swift.String"
+                  moduleName = "Zenix-iOS"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/itsonev/Developer/iOS/Zenix-iOS/Zenix-iOS/Zenix/Sources/NetworkClient/Services/AuthorizationService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "47"
+                  endingLineNumber = "47"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  uuid = "2E5EA234-A520-48DC-BE5C-2C83B2C7C1A8 - c49898a3bb73c772"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(6) suspend resume partial function for NetworkClient.AuthorizationService.refreshToken() async throws -&gt; Swift.String"
+                  moduleName = "Zenix-iOS"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/itsonev/Developer/iOS/Zenix-iOS/Zenix-iOS/Zenix/Sources/NetworkClient/Services/AuthorizationService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "47"
+                  endingLineNumber = "47"
+                  offsetFromSymbolStart = "36">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "6AA03F0D-9F7F-43CB-866B-F7DC8E71F246"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Zenix-iOS/Zenix/Sources/MainNavigationFeature/MainNavigationFeature.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "28"
+            endingLineNumber = "28"
+            landmarkName = "body"
+            landmarkType = "24">
+            <Locations>
+               <Location
+                  uuid = "6AA03F0D-9F7F-43CB-866B-F7DC8E71F246 - 42ef0d970dafdd8f"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (inout MainNavigationFeature.MainNavigationFeature.State, MainNavigationFeature.MainNavigationFeature.Action) -&gt; ComposableArchitecture.Effect&lt;MainNavigationFeature.MainNavigationFeature.Action&gt; in MainNavigationFeature.MainNavigationFeature.body.getter : some"
+                  moduleName = "Zenix-iOS"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/itsonev/Developer/iOS/Zenix-iOS/Zenix-iOS/Zenix/Sources/MainNavigationFeature/MainNavigationFeature.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "30"
+                  endingLineNumber = "30"
+                  offsetFromSymbolStart = "272">
+               </Location>
+               <Location
+                  uuid = "6AA03F0D-9F7F-43CB-866B-F7DC8E71F246 - 42ef0d970dafddc9"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (inout MainNavigationFeature.MainNavigationFeature.State, MainNavigationFeature.MainNavigationFeature.Action) -&gt; ComposableArchitecture.Effect&lt;MainNavigationFeature.MainNavigationFeature.Action&gt; in MainNavigationFeature.MainNavigationFeature.body.getter : some"
+                  moduleName = "Zenix-iOS"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/itsonev/Developer/iOS/Zenix-iOS/Zenix-iOS/Zenix/Sources/MainNavigationFeature/MainNavigationFeature.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "28"
+                  endingLineNumber = "28"
+                  offsetFromSymbolStart = "132">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "9F0D20B3-63F1-47A1-A3D7-79FC6B5F861D"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Zenix-iOS/Zenix/Sources/MainNavigationFeature/MainNavigationFeature.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "16"
+            endingLineNumber = "16"
+            landmarkName = "init()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>
