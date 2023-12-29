@@ -1,4 +1,5 @@
 import Foundation
+import Entities
 import Common
 
 public class AuthorizedNetworkService: NetworkServiceProtocol {
@@ -22,7 +23,7 @@ public class AuthorizedNetworkService: NetworkServiceProtocol {
         let token = try await authorizationService.validToken()
 
         guard let request = URLRequest.from(endpoint: endpoint, token: token) else {
-            throw NetworkError.wrongUrl
+            throw ZenixError.network(.wrongUrl)
         }
         return try await perform(request).0
     }
@@ -31,7 +32,7 @@ public class AuthorizedNetworkService: NetworkServiceProtocol {
         let token = try await authorizationService.validToken()
 
         guard let request = URLRequest.from(endpoint: endpoint, token: token) else {
-            throw NetworkError.wrongUrl
+            throw ZenixError.network(.wrongUrl)
         }
         let response = try await perform(request)
         return try JSONDecoder.isoDecoder.decode(T.self, from: response.0)
@@ -41,25 +42,25 @@ public class AuthorizedNetworkService: NetworkServiceProtocol {
         let token = try await authorizationService.validToken()
 
         guard let request = URLRequest.from(endpoint: endpoint, token: token) else {
-            throw NetworkError.wrongUrl
+            throw ZenixError.network(.wrongUrl)
         }
         _ = try await perform(request)
     }
 
     func perform(_ request: URLRequest) async throws -> (Data, URLResponse) {
-        let response = try await session.response(for: request)
-
-        if let httpResponse = response.1 as? HTTPURLResponse, httpResponse.statusCode == 401 {
-            if allowRetry {
-                _ = try await authorizationService.refreshToken()
-                allowRetry = false
-                return try await perform(request)
-            }
-
-            throw NetworkError.invalidToken
-        }
+        let response = await session.response(for: request)
         
-        allowRetry = true
-        return response
+        switch response {
+        case .success(let success):
+            return (success.data, success.response)
+        case .failure(let failure):
+            switch failure {
+            case .auth(.refreshTokenHasExpired), .auth(.refreshTokenOrUserNotFound):
+                _ = try await authorizationService.refreshToken()
+                return try await perform(request)
+            default:
+                throw failure
+            }
+        }
     }
 }

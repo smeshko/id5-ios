@@ -13,52 +13,67 @@ public struct MyProfileView: View {
     
     public var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
-            IfLetStore(
-                store.scope(
-                    state: \.signInState,
-                    action: MyProfileFeature.Action.signInAction
-                ),
-                then: SignInView.init(store:), 
-                else: {
-                    if let user = viewStore.userDetails {
-                        UserProfileView(user: user)
-                    } else {
-                        Text("Signed in")
-                    }
-                })
+            VStack {
+                IfLetStore(
+                    store.scope(
+                        state: \.signInState,
+                        action: MyProfileFeature.Action.signInAction
+                    ),
+                    then: SignInView.init(store:),
+                    else: {
+                        UserProfileView(store: store)
+                            .animation(.easeIn, value: viewStore.userDetails)
+                            .transition(.opacity)
+                    })
+            }
             .onAppear {
                 viewStore.send(.onAppear)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 }
 
 private struct UserProfileView: View {
-    let user: User.Account.Detail.Response
+    let store: StoreOf<MyProfileFeature>
+    
+    private struct ViewState: Equatable {
+        var user: User.Account.Detail.Response?
+        
+        init(state: MyProfileFeature.State) {
+            user = state.userDetails
+        }
+    }
 
     var body: some View {
-        ScrollView(.vertical) {
-            VStack(alignment: .leading, spacing: 40) {
-                Text(user.fullName)
-                    .font(.title2)
-                Text(user.email)
-                    .font(.subheadline)
-                
-                Text(user.isEmailVerified ?
-                     "Email is verified!" : "Email is NOT verified")
-                .font(.body)
-                
-                Text("User level: \(user.level)")
-                    .font(.body)
-                
-                Text(user.status.string)
-                    .font(.body).bold()
+        WithViewStore(store, observe: ViewState.init) { viewStore in
+            if let user = viewStore.user {
+                ScrollView(.vertical) {
+                    VStack(alignment: .leading, spacing: 40) {
+                        Text(user.fullName)
+                            .font(.title2)
+                        Text(user.email)
+                            .font(.subheadline)
+                        
+                        Text(user.isEmailVerified ?
+                             "Email is verified!" : "Email is NOT verified")
+                        .font(.body)
+                        
+                        Text("User level: \(user.level)")
+                            .font(.body)
+                        
+                        Text(user.status.string)
+                            .font(.body).bold()
+                        
+                        Button(action: {
+                            viewStore.send(.logoutButtonTapped)
+                        }, label: {
+                            Text("Logout")
+                        })
+                    }
+                }
             }
-            .background(.green)
         }
-        .background(.red)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        .navigationTitle("My Profile")
     }
 }
 

@@ -1,6 +1,7 @@
 import AccountClient
 import ComposableArchitecture
 import Entities
+import NetworkClient
 import SignInFeature
 
 public struct MyProfileFeature: Reducer {
@@ -20,8 +21,10 @@ public struct MyProfileFeature: Reducer {
     public enum Action: BindableAction {
         case binding(BindingAction<State>)
         case signInAction(SignInFeature.Action)
+        case logoutButtonTapped
+        case logoutSucceeded
         
-        case userInfoReceived(User.Account.Detail.Response)
+        case userInfoReceived(Result<User.Account.Detail.Response, ZenixError>)
         case onAppear
     }
     
@@ -38,21 +41,41 @@ public struct MyProfileFeature: Reducer {
                 } else {
                     return .run { send in
                         let userInfo = try await accountClient.accountInfo()
-                        await send(.userInfoReceived(userInfo))
+                        await send(.userInfoReceived(.success(userInfo)))
+                    }
+                    catch: { error, send in
+                        if let error = error as? ZenixError {
+                            await send(.userInfoReceived(.failure(error)))
+                        }
                     }
                 }
             
             case .signInAction(let action):
                 switch action {
-                case .tokenReceived(let response):
+                case .userInfoReceived(let user, _):
                     state.signInState = nil
-                    state.userDetails = response.user
+                    state.userDetails = user
                 default:
                     break
                 }
                 
             case .userInfoReceived(let response):
-                state.userDetails = response
+                switch response {
+                case .success(let details):
+                    state.userDetails = details
+                case .failure:
+                    state.signInState = .init()
+                }
+                
+            case .logoutButtonTapped:
+                return .run { send in
+                    try await accountClient.logout()
+                    await send(.logoutSucceeded)
+                }
+                
+            case .logoutSucceeded:
+                state.signInState = .init()
+                
             case .binding:
                 break
             }
@@ -65,7 +88,6 @@ public struct MyProfileFeature: Reducer {
         ) {
             SignInFeature()
         }
-        ._printChanges()
     }
 }
 

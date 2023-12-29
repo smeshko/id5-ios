@@ -11,6 +11,7 @@ public struct KeychainClient {
     public var securelyRetrieveData: (Key) -> Data?
     public var securelyStoreString: (String, Key) -> Void
     public var securelyRetrieveString: (Key) -> String?
+    public var delete: (Key) -> Void
 }
 
 public extension KeychainClient {
@@ -29,6 +30,9 @@ public extension KeychainClient {
             },
             securelyRetrieveString: { key in
                 wrapper.string(forKey: key.rawValue)
+            },
+            delete: { key in
+                wrapper.removeObject(forKey: key.rawValue)
             }
         )
     }()

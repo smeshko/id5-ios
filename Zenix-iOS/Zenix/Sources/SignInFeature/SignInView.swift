@@ -27,6 +27,8 @@ public struct SignInView: View {
                     SignInForm(store: store)
                 }
             }
+            .navigationTitle(viewStore.entryOption == .signUp ?
+                             "Sign Up" : "Sign In")
         }
     }
 }
@@ -38,6 +40,9 @@ private struct SignUpForm: View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             Form {
                 Section {
+                    TextField("Enter your full name", text: viewStore.$name)
+                        .disableAutocorrection(true)
+
                     TextField("Enter email", text: viewStore.$email)
                         .textInputAutocapitalization(.never)
                         .keyboardType(.emailAddress)
@@ -94,7 +99,7 @@ private struct SignInForm: View {
 #Preview {
     SignInView(
         store: .init(
-            initialState: .init(),
+            initialState: .init(entryOption: .signUp),
             reducer: SignInFeature.init
         )
     )

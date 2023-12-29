@@ -1,6 +1,7 @@
 import ComposableArchitecture
-import MyProfileFeature
 import DiscoverFeature
+import MyProfileFeature
+import SettingsFeature
 import SwiftUI
 
 public struct MainNavigationView: View {
@@ -9,41 +10,47 @@ public struct MainNavigationView: View {
     public init(store: StoreOf<MainNavigationFeature>) {
         self.store = store
     }
-    
-    struct ViewState: Equatable, Hashable {
-        var selectedTab: MainNavigationFeature.Tab
-        
-        init(state: MainNavigationFeature.State) {
-            selectedTab = state.selectedTab
-        }
-    }
-    
+
     private struct ViewStore: Equatable {}
     
     public var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
-//            TabView(selection: viewStore.binding(send: { .tabSelected($0.selectedTab) })) {
-            TabView(selection: viewStore.binding(get: \.selectedTab, send: { .tabSelected($0) })) {
-                DiscoverView(
-                    store: .init(
-                        initialState: .init(),
-                        reducer: DiscoverFeature.init
+            TabView {
+                NavigationStack {
+                    DiscoverView(
+                        store: .init(
+                            initialState: .init(),
+                            reducer: DiscoverFeature.init
+                        )
                     )
-                )
+                }
                 .tag(MainNavigationFeature.Tab.discover)
                 .tabItem {
                     Label("Discover", systemImage: "hand.wave.fill")
                 }
                 
-                MyProfileView(
-                    store: .init(
-                        initialState: .init(),
-                        reducer: MyProfileFeature.init
+                NavigationStack {
+                    MyProfileView(
+                        store: .init(
+                            initialState: .init(),
+                            reducer: MyProfileFeature.init
+                        )
                     )
-                )
+                }
                 .tag(MainNavigationFeature.Tab.myProfile)
                 .tabItem {
                     Label("My Profile", systemImage: "person")
+                }
+                
+                SettingsView(
+                    store: .init(
+                        initialState: .init(),
+                        reducer: SettingsFeature.init
+                    )
+                )
+                .tag(MainNavigationFeature.Tab.settings)
+                .tabItem {
+                    Label("Settings", systemImage: "gear")
                 }
             }
         }

@@ -3,19 +3,32 @@ import Entities
 import AccountClient
 
 public struct SignInFeature: Reducer {
-    enum EntryOption: String, Hashable, CaseIterable {
+    public enum EntryOption: String, Hashable, CaseIterable {
         case signIn, signUp
     }
 
     public init() {}
     
     public struct State: Equatable {
-        @BindingState var entryOption: EntryOption = .signUp
-        @BindingState var email: String = ""
-        @BindingState var password: String = ""
-        @BindingState var confirmPassword: String = ""
+        @BindingState var entryOption: EntryOption
+        @BindingState var email: String
+        @BindingState var password: String
+        @BindingState var confirmPassword: String
+        @BindingState var name: String
 
-        public init() {}
+        public init(
+            entryOption: SignInFeature.EntryOption = .signIn,
+            email: String = "",
+            password: String = "",
+            confirmPassword: String = "",
+            name: String = ""
+        ) {
+            self.entryOption = entryOption
+            self.email = email
+            self.password = password
+            self.confirmPassword = confirmPassword
+            self.name = name
+        }
     }
     
     public enum Action: BindableAction {
@@ -25,7 +38,7 @@ public struct SignInFeature: Reducer {
         case signUpButtonTapped
         case forgotPasswordButtonTapped
 
-        case tokenReceived(User.Auth.Login.Response)
+        case userInfoReceived(User.Account.Detail.Response, User.Token.Refresh.Response)
     }
     
     @Dependency(\.accountClient) var accountClient
@@ -36,15 +49,25 @@ public struct SignInFeature: Reducer {
             switch action {
             case .signInButtonTapped:
                 return .run { [state] send in
-                    let token = try await accountClient.signIn(.init(email: state.email, password: state.password))
-                    await send(.tokenReceived(token))
+                    let response = try await accountClient.signIn(.init(email: state.email, password: state.password))
+                    await send(.userInfoReceived(response.user, response.token))
                 }
                 
             case .signUpButtonTapped:
-                break
+                guard state.password == state.confirmPassword, !state.password.isEmpty else { break }
+                return .run { [state] send in
+                    let response = try await accountClient.signUp(
+                        .init(
+                            email: state.email,
+                            password: state.password,
+                            fullName: state.name
+                        )
+                    )
+                    await send(.userInfoReceived(response.user, response.token))
+                }
             case .forgotPasswordButtonTapped:
                 break
-            case .tokenReceived:
+            case .userInfoReceived:
                 break
             case .binding:
                 break

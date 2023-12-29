@@ -1,9 +1,13 @@
 import Foundation
 import Common
+import SettingsClient
+import ComposableArchitecture
 
 public enum ZenixEndpoint: Endpoint {
+    
     // auth
     case signIn(_ credentials: Data)
+    case signUp(_ credentials: Data)
     case refresh(_ token: Data)
     case logout
     
@@ -14,13 +18,13 @@ public enum ZenixEndpoint: Endpoint {
     case allContests
     
     public var host: String {
-//        "zenix-staging.fly.dev"
         "localhost"
     }
     
     public var path: String {
         switch self {
         case .signIn: "/api/auth/sign-in"
+        case .signUp: "/api/auth/sign-up"
         case .logout: "/api/auth/logout"
         case .refresh: "/api/auth/refresh"
         case .userInfo: "/api/user/me"
@@ -37,14 +41,14 @@ public enum ZenixEndpoint: Endpoint {
     
     public var method: HTTPMethod {
         switch self {
-        case .signIn, .logout, .refresh: .post
+        case .signIn, .signUp, .logout, .refresh: .post
         case .userInfo, .allContests: .get
         }
     }
     
     public var body: Data? {
         switch self {
-        case .signIn(let credentials): credentials
+        case .signIn(let credentials), .signUp(let credentials): credentials
         case .refresh(let token): token
         default: nil
         }
@@ -60,6 +64,8 @@ public enum ZenixEndpoint: Endpoint {
 
 /// A helper builder to construct the full URL of a given `Endpoint`.
 public class URLBuilder2 {
+    @Dependency(\.settingsClient) var settings
+
     private var endpoint: Endpoint
     private var urlComponents = URLComponents()
 
@@ -69,9 +75,14 @@ public class URLBuilder2 {
 
     /// Sets the basic url components, e.g. host, path, scheme
     public func components() -> Self {
-        urlComponents.scheme = "http"
-        urlComponents.port = 8080
-        urlComponents.host = endpoint.host
+        guard let base = settings.string(.baseURL) else { return self }
+        let isLocalhost = base.contains("localhost")
+        
+        urlComponents.scheme =
+            isLocalhost ? "http" : "https"
+        urlComponents.port = 
+            isLocalhost ? 8080 : nil
+        urlComponents.host = base
         urlComponents.path = endpoint.path
 
         return self
