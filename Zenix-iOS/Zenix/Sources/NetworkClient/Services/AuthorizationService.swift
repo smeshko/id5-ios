@@ -51,7 +51,7 @@ public actor AuthorizationService {
                 throw ZenixError.network(.missingToken)
             }
             
-            let refreshRequest = User.Token.Refresh.Request(refreshToken: refreshToken)
+            let refreshRequest = Auth.TokenRefresh.Request(refreshToken: refreshToken)
             let refreshData = try JSONEncoder().encode(refreshRequest)
             let endpoint = ZenixEndpoint.refresh(refreshData)
             guard let request = URLRequest.from(endpoint: endpoint) else { throw ZenixError.network(.invalidRequest) }
@@ -59,7 +59,7 @@ public actor AuthorizationService {
             let result = await self.session.response(for: request)
             switch result {
             case .success(let success):
-                let tokenResponse = try JSONDecoder().decode(User.Token.Refresh.Response.self, from: success.data)
+                let tokenResponse = try JSONDecoder().decode(Auth.TokenRefresh.Response.self, from: success.data)
                 
                 keychain.securelyStoreString(tokenResponse.accessToken, .accessToken)
                 keychain.securelyStoreString(tokenResponse.refreshToken, .refreshToken)

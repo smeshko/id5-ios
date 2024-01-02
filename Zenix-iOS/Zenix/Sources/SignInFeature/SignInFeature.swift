@@ -38,7 +38,7 @@ public struct SignInFeature: Reducer {
         case signUpButtonTapped
         case forgotPasswordButtonTapped
 
-        case userInfoReceived(User.Account.Detail.Response, User.Token.Refresh.Response)
+        case userInfoReceived(User.Detail.Response, Auth.TokenRefresh.Response)
     }
     
     @Dependency(\.accountClient) var accountClient
@@ -52,7 +52,6 @@ public struct SignInFeature: Reducer {
                     let response = try await accountClient.signIn(.init(email: state.email, password: state.password))
                     await send(.userInfoReceived(response.user, response.token))
                 }
-                
             case .signUpButtonTapped:
                 guard state.password == state.confirmPassword, !state.password.isEmpty else { break }
                 return .run { [state] send in
@@ -66,7 +65,10 @@ public struct SignInFeature: Reducer {
                     await send(.userInfoReceived(response.user, response.token))
                 }
             case .forgotPasswordButtonTapped:
-                break
+                guard !state.email.isEmpty else { break }
+                return .run { [state] send in
+                    try await accountClient.resetPassword(.init(email: state.email))
+                }
             case .userInfoReceived:
                 break
             case .binding:

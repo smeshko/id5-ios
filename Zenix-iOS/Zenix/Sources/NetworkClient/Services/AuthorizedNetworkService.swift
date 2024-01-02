@@ -55,7 +55,9 @@ public class AuthorizedNetworkService: NetworkServiceProtocol {
             return (success.data, success.response)
         case .failure(let failure):
             switch failure {
-            case .auth(.refreshTokenHasExpired), .auth(.refreshTokenOrUserNotFound):
+            case .auth(.refreshTokenHasExpired), 
+                    .auth(.refreshTokenOrUserNotFound),
+                    .auth(.accessTokenHasExpired):
                 _ = try await authorizationService.refreshToken()
                 return try await perform(request)
             default:

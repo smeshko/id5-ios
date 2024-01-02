@@ -26,6 +26,8 @@ public struct MyProfileView: View {
                             .transition(.opacity)
                     })
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
             .onAppear {
                 viewStore.send(.onAppear)
             }
@@ -37,7 +39,7 @@ private struct UserProfileView: View {
     let store: StoreOf<MyProfileFeature>
     
     private struct ViewState: Equatable {
-        var user: User.Account.Detail.Response?
+        var user: User.Detail.Response?
         
         init(state: MyProfileFeature.State) {
             user = state.userDetails
@@ -77,7 +79,7 @@ private struct UserProfileView: View {
     }
 }
 
-private extension User.Account.Status {
+private extension User.Status {
     var string: String {
         switch self {
         case .notAccepting:
@@ -92,7 +94,9 @@ private extension User.Account.Status {
     MyProfileView(
         store: .init(
             initialState: .init(),
-            reducer: MyProfileFeature.init
+            reducer: {
+                MyProfileFeature()
+            }
         )
     )
 }

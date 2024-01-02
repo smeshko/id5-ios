@@ -17,6 +17,9 @@ public struct AppView: View {
                     reducer: MainNavigationFeature.init
                 )
             )
+            .onAppear {
+                viewStore.send(.onAppear)
+            }
         }
     }
 }

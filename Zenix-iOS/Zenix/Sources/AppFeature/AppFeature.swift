@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import Entities
+import TrackingClient
 
 public struct AppFeature: Reducer {
     public static let store: StoreOf<AppFeature> = .init(
@@ -13,9 +14,19 @@ public struct AppFeature: Reducer {
         public init() {}
     }
     
-    public enum Action {}
+    public enum Action {
+        case onAppear
+    }
+    
+    @Dependency(\.trackingClient) var trackingClient
     
     public var body: some Reducer<State, Action> {
-        EmptyReducer()
+        Reduce { state, action in
+            switch action {
+            case .onAppear:
+                trackingClient.send(.applicationLaunched)
+            }
+            return .none
+        }
     }
 }

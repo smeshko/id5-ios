@@ -21,7 +21,7 @@ public struct SettingsView: View {
                 .navigationTitle("Settings")
             }
         } destination: { store in
-            DebugSettingsView.init(store: store)
+            DebugSettingsView(store: store)
         }
     }
 }

@@ -10,6 +10,7 @@ public enum ZenixEndpoint: Endpoint {
     case signUp(_ credentials: Data)
     case refresh(_ token: Data)
     case logout
+    case resetPassword(_ email: Data)
     
     // account
     case userInfo
@@ -29,6 +30,7 @@ public enum ZenixEndpoint: Endpoint {
         case .refresh: "/api/auth/refresh"
         case .userInfo: "/api/user/me"
         case .allContests: "/api/contest/list"
+        case .resetPassword: "/api/auth/reset-password"
         }
     }
     
@@ -41,7 +43,7 @@ public enum ZenixEndpoint: Endpoint {
     
     public var method: HTTPMethod {
         switch self {
-        case .signIn, .signUp, .logout, .refresh: .post
+        case .signIn, .signUp, .logout, .refresh, .resetPassword: .post
         case .userInfo, .allContests: .get
         }
     }
@@ -50,6 +52,7 @@ public enum ZenixEndpoint: Endpoint {
         switch self {
         case .signIn(let credentials), .signUp(let credentials): credentials
         case .refresh(let token): token
+        case .resetPassword(let email): email
         default: nil
         }
     }

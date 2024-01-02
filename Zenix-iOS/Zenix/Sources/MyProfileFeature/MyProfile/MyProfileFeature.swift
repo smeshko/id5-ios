@@ -13,9 +13,15 @@ public struct MyProfileFeature: Reducer {
     
     public struct State: Equatable {
         var signInState: SignInFeature.State?
-        var userDetails: User.Account.Detail.Response?
+        var userDetails: User.Detail.Response?
         
-        public init() {}
+        public init(
+            signInState: SignInFeature.State? = nil, 
+            userDetails: User.Detail.Response? = nil
+        ) {
+            self.signInState = signInState
+            self.userDetails = userDetails
+        }
     }
     
     public enum Action: BindableAction {
@@ -24,7 +30,7 @@ public struct MyProfileFeature: Reducer {
         case logoutButtonTapped
         case logoutSucceeded
         
-        case userInfoReceived(Result<User.Account.Detail.Response, ZenixError>)
+        case userInfoReceived(Result<User.Detail.Response, ZenixError>)
         case onAppear
     }
     
