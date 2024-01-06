@@ -1,15 +1,18 @@
-import Foundation
-import Entities
 import Common
+import Dependencies
+import Foundation
 
 public class AuthorizedNetworkService: NetworkServiceProtocol {
 
-    private let authorizationService: AuthorizationService
+    private let authorizationService: AuthorizationServiceProtocol
     private let session: NetworkSession
     
     private var allowRetry = true
 
-    init(authorizationService: AuthorizationService, session: NetworkSession) {
+    init(
+        authorizationService: AuthorizationServiceProtocol,
+        session: NetworkSession
+    ) {
         self.authorizationService = authorizationService
         self.session = session
     }
@@ -46,6 +49,10 @@ public class AuthorizedNetworkService: NetworkServiceProtocol {
         }
         _ = try await perform(request)
     }
+    
+    public func upload(_ data: Data, to endpoint: Endpoint) async throws {
+        fatalError("Upload not supported in auth service")
+    }
 
     func perform(_ request: URLRequest) async throws -> (Data, URLResponse) {
         let response = await session.response(for: request)
@@ -64,5 +71,20 @@ public class AuthorizedNetworkService: NetworkServiceProtocol {
                 throw failure
             }
         }
+    }
+}
+
+private enum AuthorizedNetworkServiceKey: DependencyKey {
+    static let liveValue = AuthorizedNetworkService()
+    static var previewValue = AuthorizedNetworkService(
+        authorizationService: FakeAuthorizationService(),
+        session: FakeNetworkSession()
+    )
+}
+
+public extension DependencyValues {
+    var authorizedNetworkService: AuthorizedNetworkService {
+        get { self[AuthorizedNetworkServiceKey.self] }
+        set { self[AuthorizedNetworkServiceKey.self] = newValue }
     }
 }

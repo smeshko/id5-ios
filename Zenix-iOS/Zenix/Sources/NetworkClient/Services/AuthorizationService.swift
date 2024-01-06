@@ -5,7 +5,12 @@ import Foundation
 import Helpers
 import KeychainClient
 
-public actor AuthorizationService {
+protocol AuthorizationServiceProtocol {
+    func validToken() async throws -> String
+    func refreshToken() async throws -> String
+}
+
+public actor AuthorizationService: AuthorizationServiceProtocol {
     
     private var refreshTask: Task<String, Error>?
     private let session: NetworkSession
@@ -28,7 +33,7 @@ public actor AuthorizationService {
         }
         
         guard let storedAccessToken = keychain.securelyRetrieveString(.accessToken),
-              let payload = try? JWTDecoder.decode(jwtToken: storedAccessToken) else {
+              let payload = try? JWTDecoder().decode(jwtToken: storedAccessToken) else {
             throw ZenixError.network(.missingToken)
         }
         
@@ -73,6 +78,5 @@ public actor AuthorizationService {
         self.refreshTask = task
         
         return try await task.value
-        
     }
 }

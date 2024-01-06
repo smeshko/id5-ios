@@ -1,30 +1,36 @@
-import Foundation
+import Dependencies
 import Entities
+import Foundation
+import JWTKit
+import KeychainClient
 
 public struct JWTDecoder {
-    public static func decode(jwtToken jwt: String) throws -> Payload {
-        enum DecodeErrors: Error {
-            case badToken
-            case other
+    @Dependency(\.keychainClient) private var keychainClient
+    
+    public enum JWTError: Error {
+        case expired
+        case verificationFailed
+    }
+    
+    public init() {}
+    
+    public func decode(jwtToken jwt: String) throws -> Payload? {
+        guard let key = keychainClient.securelyRetrieveString(.jwtKey) else {
+            return nil
         }
+        
+        let signers = JWTSigners()
+        signers.use(.hs256(key: key))
 
-        func base64Decode(_ base64: String) throws -> Data {
-            let base64 = base64
-                .replacingOccurrences(of: "-", with: "+")
-                .replacingOccurrences(of: "_", with: "/")
-            let padded = base64.padding(toLength: ((base64.count + 3) / 4) * 4, withPad: "=", startingAt: 0)
-            guard let decoded = Data(base64Encoded: padded) else {
-                throw DecodeErrors.badToken
-            }
-            return decoded
+        var payload: Payload?
+        
+        do {
+            payload = try signers.verify(jwt, as: Payload.self)
+        } catch JWTKit.JWTError.claimVerificationFailure(_, let reason) where reason == "expired" {
+            return nil
+        } catch {
+            throw JWTError.verificationFailed
         }
-
-        func decodeJWTPart(_ value: String) throws -> Payload {
-            let bodyData = try base64Decode(value)
-            return try JSONDecoder().decode(Payload.self, from: bodyData)
-        }
-
-        let segments = jwt.components(separatedBy: ".")
-        return try decodeJWTPart(segments[1])
+        return payload
     }
 }

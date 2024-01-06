@@ -18,6 +18,10 @@ public enum ZenixEndpoint: Endpoint {
     // contests
     case allContests
     
+    // metadata
+    case metadata(_ attest: Data)
+    case challenge
+    
     public var host: String {
         "localhost"
     }
@@ -31,6 +35,8 @@ public enum ZenixEndpoint: Endpoint {
         case .userInfo: "/api/user/me"
         case .allContests: "/api/contest/list"
         case .resetPassword: "/api/auth/reset-password"
+        case .challenge: "/api/metadata/challenge"
+        case .metadata: "/api/metadata"
         }
     }
     
@@ -44,7 +50,8 @@ public enum ZenixEndpoint: Endpoint {
     public var method: HTTPMethod {
         switch self {
         case .signIn, .signUp, .logout, .refresh, .resetPassword: .post
-        case .userInfo, .allContests: .get
+        case .metadata: .post
+        case .userInfo, .allContests, .challenge: .get
         }
     }
     
@@ -53,12 +60,18 @@ public enum ZenixEndpoint: Endpoint {
         case .signIn(let credentials), .signUp(let credentials): credentials
         case .refresh(let token): token
         case .resetPassword(let email): email
+        case .metadata(let attest): attest
         default: nil
         }
     }
 
     public var headers: [String : String] {
-        ["Content-Type" : "application/json; charset=utf-8"]
+        switch self {
+//        case .metadata:
+//            ["Content-Type" : "multipart/form-data"]
+        default:
+            ["Content-Type" : "application/json; charset=utf-8"]
+        }
     }
     
     public var queryParameters: [String : String]? { [:]}
@@ -85,7 +98,9 @@ public class URLBuilder2 {
             isLocalhost ? "http" : "https"
         urlComponents.port = 
             isLocalhost ? 8080 : nil
-        urlComponents.host = base
+//        urlComponents.host = base
+        // for iPhone usage
+        urlComponents.host = "192.168.195.136"
         urlComponents.path = endpoint.path
 
         return self

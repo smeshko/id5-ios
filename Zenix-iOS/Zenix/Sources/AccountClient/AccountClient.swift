@@ -17,14 +17,19 @@ public struct AccountClient {
 
 public extension AccountClient {
     static var live: AccountClient = {
-        let service = NetworkService()
-        let authService = AuthorizedNetworkService()
+        @Dependency(\.authorizedNetworkService) var authService
+        @Dependency(\.networkService) var networkService
         @Dependency(\.keychainClient) var keychain
         
         return .init(
             isSignedIn: {
                 if let accessToken = keychain.securelyRetrieveString(.accessToken) {
-                    return (try? JWTDecoder.decode(jwtToken: accessToken).expiresAt > .now) == true
+                    do {
+                        _ = try JWTDecoder().decode(jwtToken: accessToken)
+                        return true
+                    } catch {
+                        return false
+                    }
                 }
                 return false
             },
@@ -33,7 +38,7 @@ public extension AccountClient {
             },
             signIn: { request in
                 let jsonCreds = try JSONEncoder().encode(request)
-                let response: Auth.Login.Response = try await service.sendRequest(to: ZenixEndpoint.signIn(jsonCreds))
+                let response: Auth.Login.Response = try await networkService.sendRequest(to: ZenixEndpoint.signIn(jsonCreds))
                 keychain.securelyStoreString(response.token.refreshToken, .refreshToken)
                 keychain.securelyStoreString(response.token.accessToken, .accessToken)
                 
@@ -41,7 +46,7 @@ public extension AccountClient {
             },
             signUp: { request in
                 let jsonCreds = try JSONEncoder().encode(request)
-                let response: Auth.SignUp.Response = try await service.sendRequest(to: ZenixEndpoint.signUp(jsonCreds))
+                let response: Auth.SignUp.Response = try await networkService.sendRequest(to: ZenixEndpoint.signUp(jsonCreds))
                 keychain.securelyStoreString(response.token.refreshToken, .refreshToken)
                 keychain.securelyStoreString(response.token.accessToken, .accessToken)
                 
@@ -49,7 +54,7 @@ public extension AccountClient {
             },
             resetPassword: { request in
                 let data = try JSONEncoder().encode(request)
-                try await service.sendAndForget(to: ZenixEndpoint.resetPassword(data))
+                try await networkService.sendAndForget(to: ZenixEndpoint.resetPassword(data))
             },
             logout: {
                 try await authService.sendAndForget(to: ZenixEndpoint.logout)

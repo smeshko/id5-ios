@@ -7,6 +7,7 @@ public struct KeychainClient {
         case accessToken
         case refreshToken
         case attestKeyId
+        case jwtKey
     }
     
     public var securelyStoreData: (Data, Key) -> Void

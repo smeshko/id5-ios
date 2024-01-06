@@ -1,10 +1,12 @@
-import Foundation
 import Common
+import Dependencies
+import Foundation
 
 public protocol NetworkServiceProtocol {
     func sendRequest<T>(to endpoint: Endpoint) async throws -> T where T : Decodable
     func sendAndForget(to endpoint: Endpoint) async throws
     func fetchData(at endpoint: Endpoint) async throws -> Data
+    func upload(_ data: Data, to endpoint: Endpoint) async throws
 }
 
 public struct NetworkService: NetworkServiceProtocol {
@@ -50,5 +52,24 @@ public struct NetworkService: NetworkServiceProtocol {
             throw ZenixError.network(.wrongUrl)
         }
         _ = await session.response(for: request)
+    }
+    
+    public func upload(_ data: Data, to endpoint: Endpoint) async throws {
+        guard let request = URLRequest.from(endpoint: endpoint) else {
+            throw ZenixError.network(.wrongUrl)
+        }
+        _ = await session.upload(data, for: request)
+    }
+}
+
+private enum NetworkServiceKey: DependencyKey {
+    static let liveValue = NetworkService()
+    static var previewValue = NetworkService(session: FakeNetworkSession())
+}
+
+public extension DependencyValues {
+    var networkService: NetworkService {
+        get { self[NetworkServiceKey.self] }
+        set { self[NetworkServiceKey.self] = newValue }
     }
 }
