@@ -17,12 +17,9 @@ extension URLSession: NetworkSession {
         do {
             let response = try await upload(for: request, from: data)
             if let error = try? JSONDecoder().decode(ErrorResponse.self, from: response.0) {
-                if let id = error.errorIdentifier {
-                    if let auth = AuthenticationError(rawValue: id) {
-                        return .failure(.auth(auth))
-                    } else if let contest = ContestError(rawValue: id) {
-                        return .failure(.contest(contest))
-                    }
+                if let id = error.errorIdentifier,
+                   let auth = AuthenticationError(rawValue: id) {
+                    return .failure(.auth(auth))
                 } else {
                     return .failure(.generic(error))
                 }
@@ -40,12 +37,9 @@ extension URLSession: NetworkSession {
         do {
             let response = try await data(for: request)
             if let error = try? JSONDecoder().decode(ErrorResponse.self, from: response.0) {
-                if let id = error.errorIdentifier {
-                    if let auth = AuthenticationError(rawValue: id) {
-                        return .failure(.auth(auth))
-                    } else if let contest = ContestError(rawValue: id) {
-                        return .failure(.contest(contest))
-                    }
+                if let id = error.errorIdentifier,
+                   let auth = AuthenticationError(rawValue: id) {
+                    return .failure(.auth(auth))
                 } else {
                     return .failure(.generic(error))
                 }

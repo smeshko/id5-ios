@@ -1,7 +1,23 @@
 import Foundation
-import Common
 import SettingsClient
 import ComposableArchitecture
+
+public enum HTTPMethod: String {
+    case get = "GET"
+    case post = "POST"
+    case put = "PUT"
+}
+
+/// An object that represents an API endpoint. Contains all properties needed to build a request to an endpoint.
+public protocol Endpoint {
+    var host: String { get }
+    var path: String { get }
+    var url: URL? { get }
+    var method: HTTPMethod { get }
+    var body: Data? { get }
+    var headers: [String: String] { get }
+    var queryParameters: [String: String]? { get }
+}
 
 public enum ZenixEndpoint: Endpoint {
     
@@ -21,6 +37,7 @@ public enum ZenixEndpoint: Endpoint {
     // metadata
     case metadata(_ attest: Data)
     case challenge
+    case nearbyLocations(_ lon: Double, _ lat: Double)
     
     public var host: String {
         "localhost"
@@ -37,6 +54,7 @@ public enum ZenixEndpoint: Endpoint {
         case .resetPassword: "/api/auth/reset-password"
         case .challenge: "/api/metadata/challenge"
         case .metadata: "/api/metadata"
+        case .nearbyLocations: "/api/metadata/nearby-locations"
         }
     }
     
@@ -51,7 +69,7 @@ public enum ZenixEndpoint: Endpoint {
         switch self {
         case .signIn, .signUp, .logout, .refresh, .resetPassword: .post
         case .metadata: .post
-        case .userInfo, .allContests, .challenge: .get
+        case .userInfo, .allContests, .challenge, .nearbyLocations: .get
         }
     }
     
@@ -66,16 +84,17 @@ public enum ZenixEndpoint: Endpoint {
     }
 
     public var headers: [String : String] {
-        switch self {
-//        case .metadata:
-//            ["Content-Type" : "multipart/form-data"]
-        default:
-            ["Content-Type" : "application/json; charset=utf-8"]
-        }
+        ["Content-Type" : "application/json; charset=utf-8"]
     }
     
-    public var queryParameters: [String : String]? { [:]}
-
+    public var queryParameters: [String : String]? {
+        switch self {
+        case .nearbyLocations(let lon, let lat):
+            return ["latitude": "\(lat)", "longitude": "\(lon)"]
+        default:
+            return [:]
+        }
+    }
 }
 
 /// A helper builder to construct the full URL of a given `Endpoint`.
@@ -98,9 +117,9 @@ public class URLBuilder2 {
             isLocalhost ? "http" : "https"
         urlComponents.port = 
             isLocalhost ? 8080 : nil
-//        urlComponents.host = base
+        urlComponents.host = base
         // for iPhone usage
-        urlComponents.host = "192.168.195.136"
+//        urlComponents.host = "192.168.195.136"
         urlComponents.path = endpoint.path
 
         return self

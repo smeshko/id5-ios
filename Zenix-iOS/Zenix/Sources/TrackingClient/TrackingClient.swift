@@ -2,8 +2,18 @@ import ComposableArchitecture
 import TelemetryClient
 
 public struct TrackingClient {
-    public enum Signal: String {
-        case applicationLaunched
+    public enum Signal {
+        case event(Event)
+        case error(Error)
+        case view(View)
+        
+        var rawValue: String {
+            switch self {
+            case .event(let event): event.rawValue
+            case .error(let error): error.rawValue
+            case .view(let view): view.rawValue
+            }
+        }
     }
     
     public var send: (Signal) -> Void

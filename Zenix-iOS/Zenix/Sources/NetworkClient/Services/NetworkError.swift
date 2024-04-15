@@ -20,7 +20,6 @@ struct ErrorResponse: Error, Codable {
 
 public enum ZenixError: Error {
     case auth(AuthenticationError)
-    case contest(ContestError)
     case network(NetworkError)
     case generic(Error)
 }

@@ -7,7 +7,7 @@ import KeychainClient
 public struct JWTDecoder {
     @Dependency(\.keychainClient) private var keychainClient
     
-    public enum JWTError: Error {
+    public enum Error: Swift.Error {
         case expired
         case verificationFailed
     }
@@ -15,22 +15,26 @@ public struct JWTDecoder {
     public init() {}
     
     public func decode(jwtToken jwt: String) throws -> Payload? {
+        let signers = JWTSigners()
+        var payload: Payload?
+        
+        #if DEBUG
+        return try? signers.unverified(jwt)
+        #else
         guard let key = keychainClient.securelyRetrieveString(.jwtKey) else {
             return nil
         }
         
-        let signers = JWTSigners()
         signers.use(.hs256(key: key))
 
-        var payload: Payload?
-        
         do {
             payload = try signers.verify(jwt, as: Payload.self)
         } catch JWTKit.JWTError.claimVerificationFailure(_, let reason) where reason == "expired" {
-            return nil
+            throw Error.expired
         } catch {
-            throw JWTError.verificationFailed
+            throw Error.verificationFailed
         }
         return payload
+        #endif
     }
 }

@@ -1,4 +1,4 @@
-import Common
+import Endpoints
 import Dependencies
 import Foundation
 

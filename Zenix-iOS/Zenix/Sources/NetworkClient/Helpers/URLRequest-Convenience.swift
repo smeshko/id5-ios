@@ -1,5 +1,5 @@
 import Foundation
-import Common
+import Endpoints
 
 extension URLRequest {
     static func from(endpoint: Endpoint, token: String? = nil) -> URLRequest? {

@@ -4,15 +4,13 @@ import Entities
 import NetworkClient
 import SignInFeature
 
-public struct MyProfileFeature: Reducer {
-    enum EntryOption: String, Hashable, CaseIterable {
-        case signIn, signUp
-    }
-    
+@Reducer
+public struct MyProfileFeature {
     public init() {}
     
+    @ObservableState
     public struct State: Equatable {
-        var signInState: SignInFeature.State?
+        @Presents var signInState: SignInFeature.State?
         var userDetails: User.Detail.Response?
         
         public init(
@@ -24,9 +22,10 @@ public struct MyProfileFeature: Reducer {
         }
     }
     
-    public enum Action: BindableAction {
-        case binding(BindingAction<State>)
-        case signInAction(SignInFeature.Action)
+    public enum Action {
+        case signInAction(PresentationAction<SignInFeature.Action>)
+
+        case signInButtonTapped
         case logoutButtonTapped
         case logoutSucceeded
         
@@ -37,14 +36,10 @@ public struct MyProfileFeature: Reducer {
     @Dependency(\.accountClient) private var accountClient
     
     public var body: some Reducer<State, Action> {
-        BindingReducer()
-        
         Reduce { state, action in
             switch action {
             case .onAppear:
-                if !accountClient.isSignedIn() {
-                    state.signInState = .init()
-                } else {
+                if accountClient.isSignedIn() {
                     return .run { send in
                         let userInfo = try await accountClient.accountInfo()
                         await send(.userInfoReceived(.success(userInfo)))
@@ -58,9 +53,8 @@ public struct MyProfileFeature: Reducer {
             
             case .signInAction(let action):
                 switch action {
-                case .userInfoReceived(let user, _):
-                    state.signInState = nil
-                    state.userDetails = user
+                case .presented(.userInfoReceived(.success(let user))):
+                    state.userDetails = user.0
                 default:
                     break
                 }
@@ -79,19 +73,16 @@ public struct MyProfileFeature: Reducer {
                     await send(.logoutSucceeded)
                 }
                 
-            case .logoutSucceeded:
+            case .signInButtonTapped:
                 state.signInState = .init()
                 
-            case .binding:
-                break
+            case .logoutSucceeded:
+                state.userDetails = nil
             }
             
             return .none
         }
-        .ifLet(
-            \.signInState,
-             action: /Action.signInAction
-        ) {
+        .ifLet(\.$signInState, action: \.signInAction) {
             SignInFeature()
         }
     }

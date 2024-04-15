@@ -5,20 +5,16 @@ public extension User.Detail.Response {
     static func mock(
         id: UUID = .init(),
         email: String = "john@doe.com",
-        fullName: String = "John Doe",
-        status: User.Status = .notAccepting,
-        level: Int = 0,
-        contests: [Contest.Details.Response] = [],
+        firstName: String = "John",
+        lastName: String = "Doe",
         isAdmin: Bool = true,
         isEmailVerified: Bool = true
     ) -> User.Detail.Response {
-        User.Detail.Response(
+        .init(
             id: id,
             email: email,
-            fullName: fullName,
-            status: status,
-            level: level,
-            contests: contests,
+            firstName: firstName,
+            lastName: lastName,
             isAdmin: isAdmin,
             isEmailVerified: isEmailVerified
         )

@@ -2,26 +2,33 @@ import ComposableArchitecture
 import SwiftUI
 
 public struct SettingsView: View {
-    let store: StoreOf<SettingsFeature>
+    @Bindable var store: StoreOf<SettingsFeature>
     
     public init(store: StoreOf<SettingsFeature>) {
         self.store = store
     }
     
     public var body: some View {
-        NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
-            WithViewStore(store, observe: { $0 }) { viewStore in
-                Form {
-                    Section("Debug") {
-                        NavigationLink(state: DebugSettingsFeature.State()) {
-                            Text("Debug settings")
-                        }
-                    }
+        NavigationStack(
+            path: $store.scope(state: \.path, action: \.path)
+        ) {
+            Form {
+                Section("Debug") {
+                    NavigationLink(
+                        "Debug settings",
+                        state: SettingsFeature.Path.State.debugSettings(.init())
+                    )
                 }
-                .navigationTitle("Settings")
             }
+            .navigationTitle("Settings")
+
         } destination: { store in
-            DebugSettingsView(store: store)
+            switch store.state {
+            case .debugSettings:
+                if let store = store.scope(state: \.debugSettings, action: \.debugSettings) {
+                    DebugSettingsView(store: store)
+                }
+            }
         }
     }
 }

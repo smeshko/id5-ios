@@ -2,7 +2,8 @@ import ComposableArchitecture
 import Entities
 import SettingsClient
 
-public struct DebugSettingsFeature: Reducer {
+@Reducer
+public struct DebugSettingsFeature {
     public enum BaseURL: String, Hashable, CaseIterable {
         case local = "localhost"
         case staging = "zenix-invest-staging-0aab18bc53b2.herokuapp.com"
@@ -19,8 +20,9 @@ public struct DebugSettingsFeature: Reducer {
 
     public init() {}
     
+    @ObservableState
     public struct State: Equatable {
-        @BindingState var baseURL: BaseURL = .production
+        var baseURL: BaseURL = .production
 
         public init() {}
     }
@@ -37,14 +39,9 @@ public struct DebugSettingsFeature: Reducer {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                if let base = settings.string(.baseURL),
-                    let urlEnum = BaseURL(rawValue: base) {
-                    state.baseURL = urlEnum
-                } else {
-                    state.baseURL = .production
-                }
-                
-            case .binding(\.$baseURL):
+                state.baseURL = BaseURL(rawValue: settings.string(.baseURL) ?? "") ?? .production
+
+            case .binding(\.baseURL):
                 settings.setValue(state.baseURL.rawValue, .baseURL)
                 
             case .binding:
@@ -52,6 +49,7 @@ public struct DebugSettingsFeature: Reducer {
             }
             
             return .none
+            
         }
     }
 }

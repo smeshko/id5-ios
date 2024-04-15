@@ -2,18 +2,20 @@ import ComposableArchitecture
 import SettingsClient
 import Entities
 
-public struct SettingsFeature: Reducer {
+@Reducer
+public struct SettingsFeature {
     
     public init() {}
     
+    @ObservableState
     public struct State: Equatable {
-        var path = StackState<DebugSettingsFeature.State>()
+        var path = StackState<Path.State>()
 
         public init() {}
     }
     
     public enum Action {
-        case path(StackAction<DebugSettingsFeature.State, DebugSettingsFeature.Action>)
+        case path(StackAction<Path.State, Path.Action>)
     }
     
     @Dependency(\.settingsClient) var settings
@@ -27,8 +29,28 @@ public struct SettingsFeature: Reducer {
             
             return .none
         }
-        .forEach(\.path, action: /Action.path) {
-            DebugSettingsFeature()
+        .forEach(\.path, action: \.path) {
+            Path()
+        }
+    }
+}
+
+public extension SettingsFeature {
+    @Reducer
+    struct Path {
+        @ObservableState
+        public enum State: Equatable {
+            case debugSettings(DebugSettingsFeature.State)
+        }
+        
+        public enum Action {
+            case debugSettings(DebugSettingsFeature.Action)
+        }
+
+        public var body: some ReducerOf<Self> {
+            Scope(state: \.debugSettings, action: \.debugSettings) {
+                DebugSettingsFeature()
+            }
         }
     }
 }

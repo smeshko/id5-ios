@@ -2,27 +2,21 @@ import ComposableArchitecture
 import SwiftUI
 
 public struct DebugSettingsView: View {
-    let store: StoreOf<DebugSettingsFeature>
-    
-    public init(store: StoreOf<DebugSettingsFeature>) {
-        self.store = store
-    }
+    @Bindable var store: StoreOf<DebugSettingsFeature>
     
     public var body: some View {
-        WithViewStore(store, observe: { $0 }) { viewStore in
-            Form {
-                Picker("Environment", selection: viewStore.$baseURL) {
-                    ForEach(DebugSettingsFeature.BaseURL.allCases, id: \.rawValue) { url in
-                        Text(url.name)
-                            .tag(url)
-                    }
+        Form {
+            Picker("Environment", selection: $store.baseURL) {
+                ForEach(DebugSettingsFeature.BaseURL.allCases, id: \.rawValue) { url in
+                    Text(url.name)
+                        .tag(url)
                 }
             }
-            .onAppear {
-                viewStore.send(.onAppear)
-            }
-            .navigationTitle("Debug Settings")
         }
+        .onAppear {
+            store.send(.onAppear)
+        }
+        .navigationTitle("Debug Settings")
     }
 }
 

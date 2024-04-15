@@ -7,7 +7,8 @@ import KeychainClient
 import TrackingClient
 import Crypto
 
-public struct AppFeature: Reducer {
+@Reducer
+public struct AppFeature {
     public static let store: StoreOf<AppFeature> = .init(
         initialState: .init(),
         reducer: AppFeature.init
@@ -33,12 +34,14 @@ public struct AppFeature: Reducer {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                trackingClient.send(.applicationLaunched)
+                trackingClient.send(.event(.applicationLaunched))
                 return .run { send in
                     guard let response = try await fetchMetadata() else {
                         return
                     }
                     await send(.metadataReceived(response))
+                } catch: { error, _ in
+                    trackingClient.send(.error(.deviceCheckFailed))
                 }
                 
             case .metadataReceived(let metadata):
