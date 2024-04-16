@@ -122,10 +122,10 @@ public class URLBuilder2 {
 //        if iPhone
 //    https://www.joshwcomeau.com/blog/local-testing-on-an-iphone/
 //        ngrok http 8080
-        urlComponents.scheme = "https"
-        urlComponents.host = "6bc2-176-12-62-75.ngrok-free.app"
+//        urlComponents.scheme = "https"
+//        urlComponents.host = "6bc2-176-12-62-75.ngrok-free.app"
 //        else
-//        urlComponents.host = base
+        urlComponents.host = base
         urlComponents.path = endpoint.path
 
         return self
