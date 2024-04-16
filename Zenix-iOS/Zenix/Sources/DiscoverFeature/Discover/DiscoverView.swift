@@ -9,10 +9,14 @@ public struct DiscoverView: View {
     }
     
     public var body: some View {
-        Text("Hello, DiscoverFeature")
-            .onAppear {
-                store.send(.didAppear)
+        NavigationStack {
+            ForEach(store.scope(state: \.cards, action: \.cards)) { cardStore in
+                DiscoverCardView(store: cardStore)
             }
+        }
+        .onAppear {
+            store.send(.didAppear)
+        }
     }
 }
 

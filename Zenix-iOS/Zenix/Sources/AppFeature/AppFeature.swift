@@ -5,6 +5,7 @@ import Entities
 import Foundation
 import KeychainClient
 import TrackingClient
+import SettingsClient
 import Crypto
 
 @Reducer
@@ -29,11 +30,13 @@ public struct AppFeature {
     @Dependency(\.networkService) var networkService
     @Dependency(\.keychainClient) var keychainClient
     @Dependency(\.appAttestClient) var appAttestClient
+    @Dependency(\.settingsClient) var settingsClient
     
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                setInitialSettings()
                 trackingClient.send(.event(.applicationLaunched))
                 return .run { send in
                     guard let response = try await fetchMetadata() else {
@@ -65,11 +68,17 @@ public struct AppFeature {
                 challenge: attest.challenge,
                 keyID: data,
                 teamID: "GR9SJM3FZP",
-                bundleID: "com.zenix-invest.mobile.ios"
+                bundleID: "com.id5-beta.mobile.ios"
             )
         )
         
         let json = try JSONEncoder().encode(object)
         return try await networkService.sendRequest(to: ZenixEndpoint.metadata(json))
+    }
+    
+    private func setInitialSettings() {
+        if settingsClient.string(.baseURL) == nil {
+            settingsClient.setValue("shark-app-pwqpd.ondigitalocean.app", .baseURL)
+        }
     }
 }

@@ -1,5 +1,5 @@
 import ComposableArchitecture
-import LocationClient
+import SharedKit
 
 @Reducer
 public struct DiscoverFeature {
@@ -7,34 +7,40 @@ public struct DiscoverFeature {
     
     @ObservableState
     public struct State: Equatable {
-        var locations: [Location] = []
+        var cards: IdentifiedArrayOf<DiscoverCardFeature.State>
         
-        public init() {}
+        public init(
+            cards: IdentifiedArrayOf<DiscoverCardFeature.State> = []
+        ) {
+            self.cards = cards
+        }
     }
     
     public enum Action {
         case didAppear
+        
+        case cards(IdentifiedActionOf<DiscoverCardFeature>)
     }
-    
-    @Dependency(\.locationClient) var locationClient
-    
+        
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
             case .didAppear:
-                locationClient.requestAuthorization()
+                state.cards = [
+                    .init(post: .mock()),
+                    .init(post: .mock()),
+                    .init(post: .mock()),
+                    .init(post: .mock())
+                ]
                 
-                return .run { send in
-                    for await event in locationClient.startMonitoringForChanges() {
-                        switch event {
-                        case .didUpdateLocations(let locations):
-                            print(locations)
-                        default:
-                            print(event)
-                        }
-                    }
-                }
+            case .cards:
+                break
             }
+            
+            return .none
+        }
+        .forEach(\.cards, action: \.cards) {
+            DiscoverCardFeature()
         }
     }
 }

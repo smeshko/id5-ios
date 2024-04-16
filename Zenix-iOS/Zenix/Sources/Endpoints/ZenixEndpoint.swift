@@ -24,6 +24,7 @@ public enum ZenixEndpoint: Endpoint {
     // auth
     case signIn(_ credentials: Data)
     case signUp(_ credentials: Data)
+    case appleAuth(_ credentials: Data)
     case refresh(_ token: Data)
     case logout
     case resetPassword(_ email: Data)
@@ -47,6 +48,7 @@ public enum ZenixEndpoint: Endpoint {
         switch self {
         case .signIn: "/api/auth/sign-in"
         case .signUp: "/api/auth/sign-up"
+        case .appleAuth: "/api/auth/apple-auth"
         case .logout: "/api/auth/logout"
         case .refresh: "/api/auth/refresh"
         case .userInfo: "/api/user/me"
@@ -68,14 +70,14 @@ public enum ZenixEndpoint: Endpoint {
     public var method: HTTPMethod {
         switch self {
         case .signIn, .signUp, .logout, .refresh, .resetPassword: .post
-        case .metadata: .post
+        case .metadata, .appleAuth: .post
         case .userInfo, .allContests, .challenge, .nearbyLocations: .get
         }
     }
     
     public var body: Data? {
         switch self {
-        case .signIn(let credentials), .signUp(let credentials): credentials
+        case .signIn(let credentials), .signUp(let credentials), .appleAuth(let credentials): credentials
         case .refresh(let token): token
         case .resetPassword(let email): email
         case .metadata(let attest): attest
@@ -117,9 +119,13 @@ public class URLBuilder2 {
             isLocalhost ? "http" : "https"
         urlComponents.port = 
             isLocalhost ? 8080 : nil
-        urlComponents.host = base
-        // for iPhone usage
-//        urlComponents.host = "192.168.195.136"
+//        if iPhone
+//    https://www.joshwcomeau.com/blog/local-testing-on-an-iphone/
+//        ngrok http 8080
+        urlComponents.scheme = "https"
+        urlComponents.host = "6bc2-176-12-62-75.ngrok-free.app"
+//        else
+//        urlComponents.host = base
         urlComponents.path = endpoint.path
 
         return self

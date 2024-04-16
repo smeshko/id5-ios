@@ -2,15 +2,16 @@ import Dependencies
 import Endpoints
 import Entities
 import Foundation
-import Helpers
 import KeychainClient
 import NetworkClient
+import SharedKit
 
 public struct AccountClient {
     public var isSignedIn: () -> Bool
     public var accountInfo: () async throws -> User.Detail.Response
     public var signIn: (Auth.Login.Request) async throws -> Auth.Login.Response
     public var signUp: (Auth.SignUp.Request) async throws -> Auth.SignUp.Response
+    public var appleAuth: (Auth.Apple.Request) async throws -> Auth.Apple.Response
     public var resetPassword: (Auth.PasswordReset.Request) async throws -> Void
     public var logout: () async throws -> Void
 }
@@ -52,6 +53,13 @@ public extension AccountClient {
                 
                 return response
             },
+            appleAuth: { request in
+                let jsonCreds = try JSONEncoder().encode(request)
+                let response: Auth.Apple.Response = try await networkService.sendRequest(to: ZenixEndpoint.appleAuth(jsonCreds))
+                
+                
+                return response
+            },
             resetPassword: { request in
                 let data = try JSONEncoder().encode(request)
                 try await networkService.sendAndForget(to: ZenixEndpoint.resetPassword(data))
@@ -72,6 +80,7 @@ public extension AccountClient {
             accountInfo: { .mock() },
             signIn: { _ in .init(token: .mock(), user: .mock()) },
             signUp: { _ in .init(token: .mock(), user: .mock()) },
+            appleAuth: { _ in .init(token: .mock(), user: .mock()) },
             resetPassword: { _ in },
             logout: { }
         )

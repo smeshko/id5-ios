@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import Entities
 import AccountClient
+import AuthenticationServices
 
 @Reducer
 public struct SignInFeature {
@@ -61,7 +62,7 @@ public struct SignInFeature {
         case forgotPasswordButtonTapped
         case closeButtonTapped
         case doneButtonTapped
-        
+        case appleAuthResponseReceived(Result<ASAuthorization, Error>)
 //        case path(StackAction<Path.State, Path.Action>)
         
         case userInfoReceived(Result<(User.Detail.Response, Auth.TokenRefresh.Response), Error>)
@@ -107,12 +108,44 @@ public struct SignInFeature {
                     try await accountClient.resetPassword(.init(email: state.email))
                 }
                 
+            case .appleAuthResponseReceived(let result):
+                switch result {
+                case .success(let auth):
+                    
+                    switch auth.credential {
+                    case let appleIDCredential as ASAuthorizationAppleIDCredential:
+                        guard let token = appleIDCredential.identityToken,
+                              let string = String(data: token, encoding: .utf8) else {
+                            break
+                        }
+                        let request = Auth.Apple.Request(appleIdentityToken: string)
+                        return .run { send in
+                            let response = try await accountClient.appleAuth(request)
+                            
+                            await send(.userInfoReceived(.success((response.user, response.token))))
+                        }
+
+                    default:
+                        break
+                    }
+                    
+                    
+                    print(auth)
+                    
+                    
+                case .failure:
+                    print("error")
+                }
+                
             case .userInfoReceived(let result):
                 state.isLoading = false
                 
                 switch result {
                 case .success:
                     state.signInSuccessful = true
+                    return .run { _ in
+                        await dismiss()
+                    }
                 case .failure:
                     break
                 }

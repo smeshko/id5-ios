@@ -6,7 +6,7 @@ import SettingsClient
 public struct DebugSettingsFeature {
     public enum BaseURL: String, Hashable, CaseIterable {
         case local = "localhost"
-        case staging = "zenix-invest-staging-0aab18bc53b2.herokuapp.com"
+        case staging = "shark-app-pwqpd.ondigitalocean.app"
         case production = ""
         
         var name: String {
@@ -39,7 +39,7 @@ public struct DebugSettingsFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                state.baseURL = BaseURL(rawValue: settings.string(.baseURL) ?? "") ?? .production
+                state.baseURL = BaseURL(rawValue: settings.string(.baseURL) ?? "") ?? .staging
 
             case .binding(\.baseURL):
                 settings.setValue(state.baseURL.rawValue, .baseURL)
@@ -53,4 +53,3 @@ public struct DebugSettingsFeature {
         }
     }
 }
-

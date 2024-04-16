@@ -14,7 +14,6 @@ let package = Package(
     platforms: [.iOS(.v17)],
     products: [
         .library(name: "Endpoints", targets: ["Endpoints"]),
-        .library(name: "Helpers", targets: ["Helpers"]),
         .library(name: "StyleGuide", targets: ["StyleGuide"]),
 
         .library(name: "NetworkClient", targets: ["NetworkClient"]),
@@ -46,18 +45,17 @@ let package = Package(
     ],
     targets: [
         .target(name: "StyleGuide"),
-        .target(name: "Helpers", dependencies: [entities, jwt, tca, "KeychainClient"]),
         .target(name: "Endpoints", dependencies: [tca, "SettingsClient"]),
         
         .target(name: "SettingsClient", dependencies: [tca]),
         .target(name: "KeychainClient", dependencies: [tca, .product(name: "SwiftKeychainWrapper", package: "SwiftKeychainWrapper")]),
-        .target(name: "NetworkClient", dependencies: [entities, tca, "KeychainClient", "Endpoints", "Helpers"]),
-        .target(name: "AccountClient", dependencies: [entities, tca, "NetworkClient", "Endpoints", "Helpers"]),
+        .target(name: "NetworkClient", dependencies: [entities, tca, "KeychainClient", "Endpoints", "SharedKit"]),
+        .target(name: "AccountClient", dependencies: [entities, tca, "NetworkClient", "Endpoints", "SharedKit"]),
         .target(name: "AppAttestClient", dependencies: [tca, entities, "KeychainClient", "NetworkClient", "Endpoints"]),
         .target(name: "TrackingClient", dependencies: [tca, telemetry]),
         .target(name: "LocationClient", dependencies: [tca, entities, "NetworkClient", "Endpoints"]),
         
-        .target(name: "SharedKit", dependencies: ["TrackingClient", "StyleGuide"]),
+        .target(name: "SharedKit", dependencies: [entities, jwt, tca, "KeychainClient", "TrackingClient", "StyleGuide"]),
 
         .target(name: "AppFeature", dependencies: [tca, "MainNavigationFeature", "TrackingClient", "AppAttestClient", "KeychainClient"]),
         .target(name: "SettingsFeature", dependencies: [tca, entities, "SettingsClient"]),
