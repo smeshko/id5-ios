@@ -78,7 +78,7 @@ public struct AppFeature {
     
     private func setInitialSettings() {
         if settingsClient.string(.baseURL) == nil {
-            settingsClient.setValue("shark-app-pwqpd.ondigitalocean.app", .baseURL)
+            settingsClient.setValue("oyster-app-d6c9s.ondigitalocean.app", .baseURL)
         }
     }
 }

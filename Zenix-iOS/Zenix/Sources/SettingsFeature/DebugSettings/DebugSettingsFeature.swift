@@ -6,7 +6,7 @@ import SettingsClient
 public struct DebugSettingsFeature {
     public enum BaseURL: String, Hashable, CaseIterable {
         case local = "localhost"
-        case staging = "shark-app-pwqpd.ondigitalocean.app"
+        case staging = "oyster-app-d6c9s.ondigitalocean.app"
         case production = ""
         
         var name: String {
