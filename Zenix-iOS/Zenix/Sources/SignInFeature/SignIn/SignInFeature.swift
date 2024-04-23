@@ -1,7 +1,8 @@
-import ComposableArchitecture
-import Entities
 import AccountClient
 import AuthenticationServices
+import ComposableArchitecture
+import Entities
+import TrackingClient
 
 @Reducer
 public struct SignInFeature {
@@ -29,7 +30,6 @@ public struct SignInFeature {
         var isLoading: Bool
         var isFormValid: Bool
         var signInSuccessful: Bool
-//        var path = StackState<Path.State>()
         
         public init(
             entryOption: SignInFeature.EntryOption = .signIn,
@@ -57,30 +57,35 @@ public struct SignInFeature {
     public enum Action: BindableAction {
         case binding(BindingAction<State>)
         
+        case onAppear
         case signInButtonTapped
         case signUpButtonTapped
         case forgotPasswordButtonTapped
         case closeButtonTapped
         case doneButtonTapped
         case appleAuthResponseReceived(Result<ASAuthorization, Error>)
-//        case path(StackAction<Path.State, Path.Action>)
-        
+
         case userInfoReceived(Result<(User.Detail.Response, Auth.TokenRefresh.Response), Error>)
     }
     
     @Dependency(\.accountClient) var accountClient
     @Dependency(\.dismiss) var dismiss
+    @Dependency(\.trackingClient) var analytics
     
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                analytics.send(.view(.auth))
             case .signInButtonTapped:
                 state.isLoading = true
                 return .run { [state] send in
+                    analytics.send(.event(.signInRequested))
                     let response = try await accountClient.signIn(.init(email: state.email, password: state.password))
                     await send(.userInfoReceived(.success((response.user, response.token))))
                 } catch: { error, send in
+                    analytics.send(.error(.signInFailed))
                     await send(.userInfoReceived(.failure(error)))
                 }
                 
@@ -88,6 +93,7 @@ public struct SignInFeature {
                 guard state.password == state.confirmPassword, !state.password.isEmpty else { break }
                 state.isLoading = true
                 return .run { [state] send in
+                    analytics.send(.event(.signUpRequested))
                     let response = try await accountClient.signUp(
                         .init(
                             email: state.email,
@@ -99,19 +105,21 @@ public struct SignInFeature {
                     )
                     await send(.userInfoReceived(.success((response.user, response.token))))
                 } catch: { error, send in
+                    analytics.send(.error(.signUpFailed))
                     await send(.userInfoReceived(.failure(error)))
                 }
                 
             case .forgotPasswordButtonTapped:
+                analytics.send(.event(.forgotPasswordRequested))
                 guard !state.email.isEmpty else { break }
                 return .run { [state] send in
                     try await accountClient.resetPassword(.init(email: state.email))
                 }
                 
             case .appleAuthResponseReceived(let result):
+                analytics.send(.event(.appleAuthRequested))
                 switch result {
                 case .success(let auth):
-                    
                     switch auth.credential {
                     case let appleIDCredential as ASAuthorizationAppleIDCredential:
                         guard let token = appleIDCredential.identityToken,
@@ -123,18 +131,17 @@ public struct SignInFeature {
                             let response = try await accountClient.appleAuth(request)
                             
                             await send(.userInfoReceived(.success((response.user, response.token))))
+                        } catch: { error, send in
+                            analytics.send(.error(.appleAuthFailed))
+                            await send(.userInfoReceived(.failure(error)))
                         }
 
                     default:
-                        break
+                        analytics.send(.nonFatal(.appleAuthWrongCredentialReturned))
                     }
                     
-                    
-                    print(auth)
-                    
-                    
                 case .failure:
-                    print("error")
+                    analytics.send(.error(.appleAuthFailed))
                 }
                 
             case .userInfoReceived(let result):
@@ -142,6 +149,7 @@ public struct SignInFeature {
                 
                 switch result {
                 case .success:
+                    analytics.send(.event(.authSuccessful))
                     state.signInSuccessful = true
                     return .run { _ in
                         await dismiss()
@@ -165,36 +173,9 @@ public struct SignInFeature {
                 return .run { _ in
                     await dismiss()
                 }
-                
-//            case .path:
-//                break
             }
             
             return .none
         }
-//        .forEach(\.path, action: \.path) {
-//            Path()
-//        }
     }
 }
-
-//public extension SignInFeature {
-//    
-//    @Reducer
-//    struct Path {
-//        @ObservableState
-//        public enum State: Equatable {
-//            case verification(VerificationMailFeature.State)
-//        }
-//        
-//        public enum Action {
-//            case verification(VerificationMailFeature.Action)
-//        }
-//        
-//        public var body: some ReducerOf<Self> {
-//            Scope(state: \.verification, action: \.verification) {
-//                VerificationMailFeature()
-//            }
-//        }
-//    }
-//}

@@ -6,12 +6,14 @@ public struct TrackingClient {
         case event(Event)
         case error(Error)
         case view(View)
+        case nonFatal(NonFatal)
         
         var rawValue: String {
             switch self {
             case .event(let event): event.rawValue
             case .error(let error): error.rawValue
             case .view(let view): view.rawValue
+            case .nonFatal(let error): error.rawValue
             }
         }
     }

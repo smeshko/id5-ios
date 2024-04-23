@@ -6,10 +6,15 @@ public struct DebugSettingsView: View {
     
     public var body: some View {
         Form {
-            Picker("Environment", selection: $store.baseURL) {
-                ForEach(DebugSettingsFeature.BaseURL.allCases, id: \.rawValue) { url in
-                    Text(url.name)
-                        .tag(url)
+            Section {
+                Picker("Environment", selection: $store.baseURL) {
+                    ForEach(DebugSettingsFeature.BaseURL.allCases, id: \.name) { url in
+                        Text(url.name)
+                            .tag(url)
+                    }
+                }
+                if store.baseURL == .custom {
+                    TextField("custom host", text: $store.customHost)
                 }
             }
         }

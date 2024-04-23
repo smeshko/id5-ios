@@ -4,9 +4,9 @@ import Endpoints
 import Entities
 import Foundation
 import KeychainClient
-import TrackingClient
 import SettingsClient
-import Crypto
+import SharedKit
+import TrackingClient
 
 @Reducer
 public struct AppFeature {
@@ -31,6 +31,7 @@ public struct AppFeature {
     @Dependency(\.keychainClient) var keychainClient
     @Dependency(\.appAttestClient) var appAttestClient
     @Dependency(\.settingsClient) var settingsClient
+    @Dependency(\.environment) var environment
     
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
@@ -67,8 +68,8 @@ public struct AppFeature {
                 attestation: attest.attestation,
                 challenge: attest.challenge,
                 keyID: data,
-                teamID: "GR9SJM3FZP",
-                bundleID: "com.id5-beta.mobile.ios"
+                teamID: environment.teamID,
+                bundleID: environment.bundleID()
             )
         )
         
@@ -78,7 +79,7 @@ public struct AppFeature {
     
     private func setInitialSettings() {
         if settingsClient.string(.baseURL) == nil {
-            settingsClient.setValue("oyster-app-d6c9s.ondigitalocean.app", .baseURL)
+            settingsClient.setValue(environment.stagingHost, .baseURL)
         }
     }
 }

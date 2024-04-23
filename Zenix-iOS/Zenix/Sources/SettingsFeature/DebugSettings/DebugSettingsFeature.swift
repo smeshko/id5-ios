@@ -1,19 +1,22 @@
 import ComposableArchitecture
 import Entities
+import SharedKit
 import SettingsClient
 
 @Reducer
 public struct DebugSettingsFeature {
-    public enum BaseURL: String, Hashable, CaseIterable {
-        case local = "localhost"
-        case staging = "oyster-app-d6c9s.ondigitalocean.app"
-        case production = ""
+    public enum BaseURL: Hashable, CaseIterable {
+        case local
+        case staging
+        case production
+        case custom
         
         var name: String {
             switch self {
             case .local: "local"
             case .staging: "staging"
             case .production: "production"
+            case .custom: "custom"
             }
         }
     }
@@ -23,6 +26,7 @@ public struct DebugSettingsFeature {
     @ObservableState
     public struct State: Equatable {
         var baseURL: BaseURL = .production
+        var customHost: String = ""
 
         public init() {}
     }
@@ -33,16 +37,21 @@ public struct DebugSettingsFeature {
     }
 
     @Dependency(\.settingsClient) var settings
+    @Dependency(\.environment) var environment
 
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { state, action in
             switch action {
             case .onAppear:
-                state.baseURL = BaseURL(rawValue: settings.string(.baseURL) ?? "") ?? .staging
+                state.baseURL = base(for: (settings.string(.baseURL) ?? ""))
+                if state.baseURL == .custom {
+                    state.customHost = settings.string(.baseURL) ?? ""
+                }
 
-            case .binding(\.baseURL):
-                settings.setValue(state.baseURL.rawValue, .baseURL)
+            case .binding(\.baseURL), .binding(\.customHost):
+                let host = host(for: state.baseURL, custom: state.customHost)
+                settings.setValue(host, .baseURL)
                 
             case .binding:
                 break
@@ -50,6 +59,29 @@ public struct DebugSettingsFeature {
             
             return .none
             
+        }
+    }
+}
+
+private extension DebugSettingsFeature {
+    func base(for host: String) -> BaseURL {
+        if host.contains("localhost") {
+            return .local
+        } else if host == environment.stagingHost {
+            return .staging
+        } else if host == environment.productionHost {
+            return .production
+        } else {
+            return .custom
+        }
+    }
+    
+    func host(for base: BaseURL, custom: String) -> String {
+        switch base {
+        case .local: "localhost"
+        case .staging: environment.stagingHost
+        case .production: "prod"
+        case .custom: custom
         }
     }
 }

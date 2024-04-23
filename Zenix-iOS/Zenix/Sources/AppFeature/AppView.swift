@@ -20,6 +20,7 @@ public struct AppView: View {
         .onAppear {
             store.send(.onAppear)
         }
+        .tint(.blue)
     }
 }
 

@@ -32,13 +32,14 @@ public enum ZenixEndpoint: Endpoint {
     // account
     case userInfo
     
-    // contests
-    case allContests
-    
     // metadata
     case metadata(_ attest: Data)
     case challenge
+    
+    // services
     case nearbyLocations(_ lon: Double, _ lat: Double)
+    case addressAutocomplete(_ query: String)
+    case geocode(_ id: String)
     
     public var host: String {
         "localhost"
@@ -52,11 +53,12 @@ public enum ZenixEndpoint: Endpoint {
         case .logout: "/api/auth/logout"
         case .refresh: "/api/auth/refresh"
         case .userInfo: "/api/user/me"
-        case .allContests: "/api/contest/list"
         case .resetPassword: "/api/auth/reset-password"
         case .challenge: "/api/metadata/challenge"
         case .metadata: "/api/metadata"
-        case .nearbyLocations: "/api/metadata/nearby-locations"
+        case .nearbyLocations: "/api/services/places/search"
+        case .addressAutocomplete: "/api/services/places/autocomplete"
+        case .geocode: "/api/services/places/geocode"
         }
     }
     
@@ -69,9 +71,8 @@ public enum ZenixEndpoint: Endpoint {
     
     public var method: HTTPMethod {
         switch self {
-        case .signIn, .signUp, .logout, .refresh, .resetPassword: .post
-        case .metadata, .appleAuth: .post
-        case .userInfo, .allContests, .challenge, .nearbyLocations: .get
+        case .signIn, .signUp, .logout, .refresh, .resetPassword, .metadata, .appleAuth: .post
+        case .userInfo, .challenge, .nearbyLocations, .addressAutocomplete, .geocode: .get
         }
     }
     
@@ -93,6 +94,10 @@ public enum ZenixEndpoint: Endpoint {
         switch self {
         case .nearbyLocations(let lon, let lat):
             return ["latitude": "\(lat)", "longitude": "\(lon)"]
+        case .addressAutocomplete(let query):
+            return ["query": query]
+        case .geocode(let id):
+            return ["placeId": id]
         default:
             return [:]
         }
@@ -113,18 +118,16 @@ public class URLBuilder2 {
     /// Sets the basic url components, e.g. host, path, scheme
     public func components() -> Self {
         guard let base = settings.string(.baseURL) else { return self }
+
+//      for localhost connection on iPhone run
+//      ngrok http 8080 and then paste the address in Debug Settings -> custom
+//      https://www.joshwcomeau.com/blog/local-testing-on-an-iphone/
         let isLocalhost = base.contains("localhost")
         
         urlComponents.scheme =
             isLocalhost ? "http" : "https"
         urlComponents.port = 
             isLocalhost ? 8080 : nil
-//        if iPhone
-//    https://www.joshwcomeau.com/blog/local-testing-on-an-iphone/
-//        ngrok http 8080
-//        urlComponents.scheme = "https"
-//        urlComponents.host = "6bc2-176-12-62-75.ngrok-free.app"
-//        else
         urlComponents.host = base
         urlComponents.path = endpoint.path
 
