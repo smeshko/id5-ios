@@ -4,9 +4,11 @@ import Endpoints
 import Entities
 import Foundation
 import KeychainClient
-import SettingsClient
+import LocalStorageClient
 import SharedKit
 import TrackingClient
+
+extension Metadata.Request: JSONEncodable {}
 
 @Reducer
 public struct AppFeature {
@@ -30,7 +32,7 @@ public struct AppFeature {
     @Dependency(\.networkService) var networkService
     @Dependency(\.keychainClient) var keychainClient
     @Dependency(\.appAttestClient) var appAttestClient
-    @Dependency(\.settingsClient) var settingsClient
+    @Dependency(\.localStorageClient) var localStorage
     @Dependency(\.environment) var environment
     
     public var body: some Reducer<State, Action> {
@@ -73,13 +75,12 @@ public struct AppFeature {
             )
         )
         
-        let json = try JSONEncoder().encode(object)
-        return try await networkService.sendRequest(to: ZenixEndpoint.metadata(json))
+        return try await networkService.sendRequest(to: MetadataEndpoint.metadata(object.encoded))
     }
     
     private func setInitialSettings() {
-        if settingsClient.string(.baseURL) == nil {
-            settingsClient.setValue(environment.stagingHost, .baseURL)
+        if localStorage.string(.baseURL) == nil {
+            localStorage.setValue(environment.stagingHost, .baseURL)
         }
     }
 }

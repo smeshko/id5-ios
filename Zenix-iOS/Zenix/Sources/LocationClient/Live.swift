@@ -34,7 +34,7 @@ public extension LocationClient {
             },
             convertToAddress: { location in
                 try await networkService.sendRequest(
-                    to: ZenixEndpoint.nearbyLocations(
+                    to: ServiceEndpoint.nearbyLocations(
                         location.longitude,
                         location.latitude
                     )

@@ -11,11 +11,29 @@ public struct DiscoverCardView: View {
     }
     
     public var body: some View {
-        Text(store.post.text)
-            .border(.red)
-            .onAppear {
-                store.send(.onAppear)
+        VStack(alignment: .leading) {
+            ZenixImage(media: store.thumbnail)
+            
+            HStack {
+                HStack(spacing: 0) {
+                    Image(systemName: "text.bubble.fill")
+                    Text("\(store.post.commentCount)")
+                }
+                .font(.caption)
+                
+                Spacer()
+                
+                Text(
+                    store.post.createdAt
+                        .formatted(.relative(presentation: .named, unitsStyle: .narrow))
+                )
+                .font(.caption)
             }
+            Text(store.post.text)
+                .onAppear {
+                    store.send(.onAppear)
+                }
+        }
     }
 }
 
@@ -23,13 +41,7 @@ public struct DiscoverCardView: View {
     DiscoverCardView(
         store: .init(
             initialState: .init(
-                post: .init(
-                    id: .init(),
-                    text: "This is a post",
-                    imageIDs: [],
-                    videoIDs: [],
-                    tags: []
-                )
+                post: .mock(createdAt: .now - 100000)
             ),
             reducer: DiscoverCardFeature.init
         )

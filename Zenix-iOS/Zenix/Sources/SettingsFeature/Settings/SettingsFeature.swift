@@ -1,5 +1,5 @@
 import ComposableArchitecture
-import SettingsClient
+import LocalStorageClient
 import Entities
 
 @Reducer
@@ -18,7 +18,7 @@ public struct SettingsFeature {
         case path(StackAction<Path.State, Path.Action>)
     }
     
-    @Dependency(\.settingsClient) var settings
+    @Dependency(\.localStorageClient) var localStorage
     
     public var body: some Reducer<State, Action> {
         Reduce { state, action in

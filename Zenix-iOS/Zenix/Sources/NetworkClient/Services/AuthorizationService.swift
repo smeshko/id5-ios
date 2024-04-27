@@ -5,6 +5,8 @@ import Foundation
 import KeychainClient
 import SharedKit
 
+extension Auth.TokenRefresh.Request: JSONEncodable {}
+
 protocol AuthorizationServiceProtocol {
     func validToken() async throws -> String
     func refreshToken() async throws -> String
@@ -57,8 +59,7 @@ public actor AuthorizationService: AuthorizationServiceProtocol {
             }
             
             let refreshRequest = Auth.TokenRefresh.Request(refreshToken: refreshToken)
-            let refreshData = try JSONEncoder().encode(refreshRequest)
-            let endpoint = ZenixEndpoint.refresh(refreshData)
+            let endpoint = AuthEndpoint.refresh(refreshRequest.encoded)
             guard let request = URLRequest.from(endpoint: endpoint) else { throw ZenixError.network(.invalidRequest) }
             
             let result = await self.session.response(for: request)

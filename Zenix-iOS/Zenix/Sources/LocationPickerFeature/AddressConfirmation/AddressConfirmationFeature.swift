@@ -31,7 +31,7 @@ public struct AddressConfirmationFeature {
             switch action {
             case .onAppear:
                 return .run { [state] send in
-                    let result: Places.Geocode.Response = try await networkService.sendRequest(to: ZenixEndpoint.geocode(state.placeId))
+                    let result: Places.Geocode.Response = try await networkService.sendRequest(to: ServiceEndpoint.geocode(state.placeId))
                     
                     await send(.addressReceived(.success(result)))
                 } catch: { error, send in

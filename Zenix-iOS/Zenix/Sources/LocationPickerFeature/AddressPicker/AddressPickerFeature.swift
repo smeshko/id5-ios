@@ -43,7 +43,7 @@ public struct AddressPickerFeature {
                 
             case .binding(\.query):
                 return .run { [state] send in
-                    let response: Places.Autocomplete.Response = try await networkService.sendRequest(to: ZenixEndpoint.addressAutocomplete(state.query))
+                    let response: Places.Autocomplete.Response = try await networkService.sendRequest(to: ServiceEndpoint.addressAutocomplete(state.query))
                     await send(.suggestionsReceived(.success(response.suggestions)))
                 } catch: { error, send in
                     await send(.suggestionsReceived(.failure(error)))

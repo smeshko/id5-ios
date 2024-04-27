@@ -6,6 +6,11 @@ import KeychainClient
 import NetworkClient
 import SharedKit
 
+extension Auth.Login.Request: JSONEncodable {}
+extension Auth.SignUp.Request: JSONEncodable {}
+extension Auth.Apple.Request: JSONEncodable {}
+extension Auth.PasswordReset.Request: JSONEncodable {}
+
 public struct AccountClient {
     public var isSignedIn: () -> Bool
     public var accountInfo: () async throws -> User.Detail.Response
@@ -35,37 +40,30 @@ public extension AccountClient {
                 return false
             },
             accountInfo: {
-                try await authService.sendRequest(to: ZenixEndpoint.userInfo)
+                try await authService.sendRequest(to: UserEndpoint.userInfo)
             },
             signIn: { request in
-                let jsonCreds = try JSONEncoder().encode(request)
-                let response: Auth.Login.Response = try await networkService.sendRequest(to: ZenixEndpoint.signIn(jsonCreds))
+                let response: Auth.Login.Response = try await networkService.sendRequest(to: AuthEndpoint.signIn(request.encoded))
                 keychain.securelyStoreString(response.token.refreshToken, .refreshToken)
                 keychain.securelyStoreString(response.token.accessToken, .accessToken)
                 
                 return response
             },
             signUp: { request in
-                let jsonCreds = try JSONEncoder().encode(request)
-                let response: Auth.SignUp.Response = try await networkService.sendRequest(to: ZenixEndpoint.signUp(jsonCreds))
+                let response: Auth.SignUp.Response = try await networkService.sendRequest(to: AuthEndpoint.signUp(request.encoded))
                 keychain.securelyStoreString(response.token.refreshToken, .refreshToken)
                 keychain.securelyStoreString(response.token.accessToken, .accessToken)
                 
                 return response
             },
             appleAuth: { request in
-                let jsonCreds = try JSONEncoder().encode(request)
-                let response: Auth.Apple.Response = try await networkService.sendRequest(to: ZenixEndpoint.appleAuth(jsonCreds))
-                
-                
-                return response
+                try await networkService.sendRequest(to: AuthEndpoint.appleAuth(request.encoded))
             },
             resetPassword: { request in
-                let data = try JSONEncoder().encode(request)
-                try await networkService.sendAndForget(to: ZenixEndpoint.resetPassword(data))
+                try await networkService.sendAndForget(to: AuthEndpoint.resetPassword(request.encoded))
             },
             logout: {
-                try await authService.sendAndForget(to: ZenixEndpoint.logout)
+                try await authService.sendAndForget(to: AuthEndpoint.logout)
                 keychain.delete(.refreshToken)
                 keychain.delete(.accessToken)
             }

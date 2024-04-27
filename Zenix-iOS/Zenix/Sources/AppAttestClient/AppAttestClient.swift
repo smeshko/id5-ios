@@ -54,7 +54,7 @@ public extension AppAttestClient {
                     throw AppAttestError.generatingAttestationFailed
                 }
                 
-                let challenge: Attestation.Challenge.Response = try await networkService.sendRequest(to: ZenixEndpoint.challenge)
+                let challenge: Attestation.Challenge.Response = try await networkService.sendRequest(to: MetadataEndpoint.challenge)
                 guard let data = Data(base64Encoded: challenge.value) else {
                     throw AppAttestError.generatingAttestationFailed
                 }

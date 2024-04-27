@@ -19,7 +19,7 @@ let package = Package(
         .library(name: "NetworkClient", targets: ["NetworkClient"]),
         .library(name: "AccountClient", targets: ["AccountClient"]),
         .library(name: "KeychainClient", targets: ["KeychainClient"]),
-        .library(name: "SettingsClient", targets: ["SettingsClient"]),
+        .library(name: "LocalStorageClient", targets: ["LocalStorageClient"]),
         .library(name: "AppAttestClient", targets: ["AppAttestClient"]),
         .library(name: "TrackingClient", targets: ["TrackingClient"]),
         .library(name: "LocationClient", targets: ["LocationClient"]),
@@ -33,6 +33,7 @@ let package = Package(
         .library(name: "LocationPickerFeature", targets: ["LocationPickerFeature"]),
         .library(name: "MyProfileFeature", targets: ["MyProfileFeature"]),
         .library(name: "CreatePostFeature", targets: ["CreatePostFeature"]),
+        .library(name: "PostDetailsFeature", targets: ["PostDetailsFeature"]),
         .library(name: "MainNavigationFeature", targets: ["MainNavigationFeature"])
     ],
     dependencies: [
@@ -44,10 +45,10 @@ let package = Package(
         .package(url: "https://github.com/quentinfasquel/Capture.git", branch: "main")
     ],
     targets: [
-        .target(name: "StyleGuide"),
-        .target(name: "Endpoints", dependencies: [tca, "SettingsClient"]),
+        .target(name: "StyleGuide", dependencies: [entities]),
+        .target(name: "Endpoints", dependencies: [tca, "LocalStorageClient"]),
         
-        .target(name: "SettingsClient", dependencies: [tca]),
+        .target(name: "LocalStorageClient", dependencies: [tca]),
         .target(name: "KeychainClient", dependencies: [tca, .product(name: "SwiftKeychainWrapper", package: "SwiftKeychainWrapper")]),
         .target(name: "NetworkClient", dependencies: [entities, tca, "KeychainClient", "Endpoints", "SharedKit"]),
         .target(name: "AccountClient", dependencies: [entities, tca, "NetworkClient", "Endpoints", "SharedKit"]),
@@ -58,12 +59,13 @@ let package = Package(
         .target(name: "SharedKit", dependencies: [entities, jwt, tca, "KeychainClient", "TrackingClient", "StyleGuide"]),
 
         .target(name: "AppFeature", dependencies: [tca, "MainNavigationFeature", "TrackingClient", "AppAttestClient", "KeychainClient", "SharedKit"]),
-        .target(name: "SettingsFeature", dependencies: [tca, entities, "SettingsClient", "SharedKit"]),
+        .target(name: "SettingsFeature", dependencies: [tca, entities, "LocalStorageClient", "SharedKit"]),
         .target(name: "SignInFeature", dependencies: [tca, "AccountClient", "StyleGuide", "SharedKit", "TrackingClient"]),
-        .target(name: "DiscoverFeature", dependencies: [tca, "LocationClient"]),
+        .target(name: "DiscoverFeature", dependencies: [tca, "LocationClient", "NetworkClient", "PostDetailsFeature"]),
         .target(name: "LocationPickerFeature", dependencies: [tca, "LocationClient", "NetworkClient"]),
         .target(name: "MyProfileFeature", dependencies: [tca, "StyleGuide", "AccountClient", "SignInFeature"]),
-        .target(name: "CreatePostFeature", dependencies: [tca, camera, entities, "StyleGuide"]),
+        .target(name: "PostDetailsFeature", dependencies: [tca, entities, "StyleGuide", "Endpoints", "NetworkClient", "SharedKit"]),
+        .target(name: "CreatePostFeature", dependencies: [tca, camera, entities, "StyleGuide", "NetworkClient"]),
         .target(name: "MainNavigationFeature", dependencies: [
             tca, "DiscoverFeature", "MyProfileFeature", "SettingsFeature", "CreatePostFeature", "LocationPickerFeature"
         ]),

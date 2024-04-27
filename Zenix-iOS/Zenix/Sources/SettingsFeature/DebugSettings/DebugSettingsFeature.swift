@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import Entities
 import SharedKit
-import SettingsClient
+import LocalStorageClient
 
 @Reducer
 public struct DebugSettingsFeature {
@@ -36,7 +36,7 @@ public struct DebugSettingsFeature {
         case binding(BindingAction<State>)
     }
 
-    @Dependency(\.settingsClient) var settings
+    @Dependency(\.localStorageClient) var localStorage
     @Dependency(\.environment) var environment
 
     public var body: some Reducer<State, Action> {
@@ -44,14 +44,14 @@ public struct DebugSettingsFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                state.baseURL = base(for: (settings.string(.baseURL) ?? ""))
+                state.baseURL = base(for: (localStorage.string(.baseURL) ?? ""))
                 if state.baseURL == .custom {
-                    state.customHost = settings.string(.baseURL) ?? ""
+                    state.customHost = localStorage.string(.baseURL) ?? ""
                 }
 
             case .binding(\.baseURL), .binding(\.customHost):
                 let host = host(for: state.baseURL, custom: state.customHost)
-                settings.setValue(host, .baseURL)
+                localStorage.setValue(host, .baseURL)
                 
             case .binding:
                 break
