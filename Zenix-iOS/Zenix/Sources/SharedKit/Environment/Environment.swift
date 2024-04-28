@@ -17,7 +17,7 @@ extension Environment {
                 }
                 fatalError("Couldn't load bundle identifier")
             },
-            stagingHost: "oyster-app-d6c9s.ondigitalocean.app",
+            stagingHost: "monkfish-app-ht4h4.ondigitalocean.app",
             productionHost: "",
             teamID: "GR9SJM3FZP"
         )

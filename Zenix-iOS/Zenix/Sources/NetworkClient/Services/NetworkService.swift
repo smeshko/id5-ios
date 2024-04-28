@@ -1,6 +1,7 @@
-import Endpoints
 import Dependencies
+import Endpoints
 import Foundation
+import SharedKit
 
 public protocol NetworkServiceProtocol {
     func sendRequest<T>(to endpoint: Endpoint) async throws -> T where T : Decodable

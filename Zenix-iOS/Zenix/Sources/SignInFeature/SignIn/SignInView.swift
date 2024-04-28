@@ -20,6 +20,11 @@ public struct SignInView: View {
                         .navigationTitle("Verify your email")
                 } else {
                     VStack(alignment: .leading, spacing: Spacing.sp300) {
+                        if let error = store.error {
+                            Text(error)
+                                .foregroundStyle(.red)
+                                .bold()
+                        }
                         FormView(store: store)
                             .animation(.easeIn, value: store.signInSuccessful)
                             .transition(.opacity)
@@ -50,7 +55,6 @@ public struct SignInView: View {
                             store.send(.appleAuthResponseReceived(result))
                         }
                         .frame(height: 60)
-
                     }
                 }
             }

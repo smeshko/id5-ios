@@ -1,4 +1,5 @@
 import Foundation
+import SharedKit
 
 class FakeNetworkSession: NetworkSession {
     func response(for request: URLRequest) async -> Result<NetworkResponse, ZenixError> {

@@ -2,6 +2,7 @@ import AccountClient
 import AuthenticationServices
 import ComposableArchitecture
 import Entities
+import SharedKit
 import TrackingClient
 
 @Reducer
@@ -30,6 +31,7 @@ public struct SignInFeature {
         var isLoading: Bool
         var isFormValid: Bool
         var signInSuccessful: Bool
+        var error: String? = nil
         
         public init(
             entryOption: SignInFeature.EntryOption = .signIn,
@@ -63,8 +65,8 @@ public struct SignInFeature {
         case forgotPasswordButtonTapped
         case closeButtonTapped
         case doneButtonTapped
+        
         case appleAuthResponseReceived(Result<ASAuthorization, Error>)
-
         case userInfoReceived(Result<(User.Detail.Response, Auth.TokenRefresh.Response), Error>)
     }
     
@@ -154,8 +156,10 @@ public struct SignInFeature {
                     return .run { _ in
                         await dismiss()
                     }
-                case .failure:
-                    break
+                case .failure(let error):
+                    if let error = error as? ZenixError {
+                        state.error = error.reason
+                    }
                 }
                 
             case .binding:

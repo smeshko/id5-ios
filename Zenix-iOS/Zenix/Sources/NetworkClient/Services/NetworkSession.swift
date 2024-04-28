@@ -1,5 +1,6 @@
-import Foundation
 import Entities
+import Foundation
+import SharedKit
 
 struct NetworkResponse {
     let data: Data
