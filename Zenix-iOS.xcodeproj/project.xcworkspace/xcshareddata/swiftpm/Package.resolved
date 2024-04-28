@@ -24,7 +24,7 @@
       "location" : "https://github.com/smeshko/id5-entities",
       "state" : {
         "branch" : "main",
-        "revision" : "948593de807837276f2aa67a354d8cb65d9d80b0"
+        "revision" : "d58f7e0c794e0a13c654cb42c0d4885e651d1acc"
       }
     },
     {
@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
-        "revision" : "79623dbe2c7672f5e450d8325613d231454390b3",
-        "version" : "1.3.2"
+        "revision" : "8d712376c99fc0267aa0e41fea732babe365270a",
+        "version" : "1.3.3"
       }
     },
     {
@@ -113,8 +113,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-identified-collections",
       "state" : {
-        "revision" : "d1e45f3e1eee2c9193f5369fa9d70a6ddad635e8",
-        "version" : "1.0.0"
+        "revision" : "2481e39ea43e14556ca9628259fa6b377427730c",
+        "version" : "1.0.1"
       }
     },
     {

@@ -12,6 +12,11 @@ public struct PostDetailsView: View {
     
     public var body: some View {
         VStack(alignment: .leading) {
+            if let error = store.error {
+                Text(error)
+                    .foregroundStyle(.red)
+                    .bold()
+            }
             if let post = store.post {
                 ScrollView {
                     ZenixImage(media: store.images.first)
@@ -26,8 +31,6 @@ public struct PostDetailsView: View {
                         }
                 }
                 .scrollIndicators(.hidden)
-            } else {
-                Text("Hello, PostDetailsFeature")
             }
         }
         .padding()

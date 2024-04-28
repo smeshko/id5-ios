@@ -18,6 +18,7 @@ public struct PostDetailsFeature {
         var comments: [Comment.List.Response] = []
         var images: [Media.Download.Response] = []
         var newComment: String
+        var error: String?
         
         public init(
             postId: UUID,
@@ -85,7 +86,14 @@ public struct PostDetailsFeature {
             case .didReceiveImage(.success(let image)):
                 state.images.append(image)
                 
-            case .didReceivePostDetails, .didReceiveImage, .didReceiveComments, .binding:
+            case .didReceivePostDetails(.failure(let error)), 
+                    .didReceiveImage(.failure(let error)),
+                    .didReceiveComments(.failure(let error)):
+                if let error = error as? ZenixError {
+                    state.error = error.reason
+                }
+                
+            case .binding:
                 break
             }
             

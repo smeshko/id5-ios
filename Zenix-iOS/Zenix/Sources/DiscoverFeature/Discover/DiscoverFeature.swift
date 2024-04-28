@@ -13,6 +13,7 @@ public struct DiscoverFeature {
     public struct State: Equatable {
         var cards: IdentifiedArrayOf<DiscoverCardFeature.State>
         var path = StackState<Path.State>()
+        var error: String?
 
         public init(
             cards: IdentifiedArrayOf<DiscoverCardFeature.State> = []
@@ -47,8 +48,13 @@ public struct DiscoverFeature {
                 
             case .didReceivePosts(.success(let posts)):
                 state.cards = posts.map(DiscoverCardFeature.State.init(post:)).identified
+            
+            case .didReceivePosts(.failure(let error)):
+                if let error = error as? ZenixError {
+                    state.error = error.reason
+                }
                 
-            case .cards, .didReceivePosts, .path:
+            case .cards, .path:
                 break
             }
             

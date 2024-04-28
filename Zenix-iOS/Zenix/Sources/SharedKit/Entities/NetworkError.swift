@@ -51,6 +51,7 @@ public struct ErrorResponse: Error, Codable {
 
 public enum ZenixError: Error {
     case auth(AuthenticationError)
+    case content(ContentError)
     case network(NetworkError)
     case generic(Error)
 }
@@ -60,6 +61,8 @@ public extension ZenixError {
         switch self {
         case .auth(let authenticationError):
             authenticationError.reason
+        case .content(let contentError):
+            contentError.reason
         case .network(let networkError):
             networkError.reason
         case .generic(let error):
