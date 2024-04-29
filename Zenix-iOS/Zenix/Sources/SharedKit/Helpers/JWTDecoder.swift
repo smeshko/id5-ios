@@ -16,25 +16,25 @@ public struct JWTDecoder {
     
     public func decode(jwtToken jwt: String) throws -> Payload? {
         let signers = JWTSigners()
-        var payload: Payload?
+//        var payload: Payload?
         
-        #if DEBUG
+//        #if DEBUG
         return try? signers.unverified(jwt)
-        #else
-        guard let key = keychainClient.securelyRetrieveString(.jwtKey) else {
-            return nil
-        }
-        
-        signers.use(.hs256(key: key))
-
-        do {
-            payload = try signers.verify(jwt, as: Payload.self)
-        } catch JWTKit.JWTError.claimVerificationFailure(_, let reason) where reason == "expired" {
-            throw Error.expired
-        } catch {
-            throw Error.verificationFailed
-        }
-        return payload
-        #endif
+//        #else
+//        guard let key = keychainClient.securelyRetrieveString(.jwtKey) else {
+//            return nil
+//        }
+//        
+//        signers.use(.hs256(key: key))
+//
+//        do {
+//            payload = try signers.verify(jwt, as: Payload.self)
+//        } catch JWTKit.JWTError.claimVerificationFailure(_, let reason) where reason == "expired" {
+//            throw Error.expired
+//        } catch {
+//            throw Error.verificationFailed
+//        }
+//        return payload
+//        #endif
     }
 }

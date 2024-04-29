@@ -24,6 +24,7 @@ public struct DiscoverFeature {
     
     public enum Action {
         case didAppear
+        case fetchPosts
         
         case didReceivePosts(Result<[Post.List.Response], Error>)
         case cards(IdentifiedActionOf<DiscoverCardFeature>)
@@ -38,7 +39,10 @@ public struct DiscoverFeature {
             switch action {
             case .didAppear:
                 guard state.cards.isEmpty else { break }
+                return .send(.fetchPosts)
                 
+            case .fetchPosts:
+                state.cards = []
                 return .run { send in
                     let response: [Post.List.Response] = try await networkService.sendRequest(to: PostEndpoint.allPosts)
                     await send(.didReceivePosts(.success(response)))

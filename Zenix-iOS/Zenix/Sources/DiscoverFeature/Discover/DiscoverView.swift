@@ -33,6 +33,9 @@ public struct DiscoverView: View {
                     CurrentLocationView(store: store)
                 }
             }
+            .refreshable {
+                store.send(.fetchPosts)
+            }
 //            .searchable(text: $query)
 //            .searchSuggestions({
 //                VStack(alignment: .leading) {
