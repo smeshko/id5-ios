@@ -24,7 +24,7 @@
       "location" : "https://github.com/smeshko/id5-entities",
       "state" : {
         "branch" : "main",
-        "revision" : "d58f7e0c794e0a13c654cb42c0d4885e651d1acc"
+        "revision" : "3b17295762c270578e27c3903865a539d062fe93"
       }
     },
     {
@@ -68,8 +68,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-composable-architecture",
       "state" : {
-        "revision" : "899a68ce3c4eca42a42e6bad2c925b82dcab5187",
-        "version" : "1.9.3"
+        "revision" : "aec373a6cce67facb3d6d30fa2ffcba38f7d082e",
+        "version" : "1.10.1"
       }
     },
     {
@@ -122,8 +122,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-perception",
       "state" : {
-        "revision" : "052bd30a2079d9eb2400f0bc66707cc93c015152",
-        "version" : "1.1.5"
+        "revision" : "03d51ee56a5fa27daccbc9539cebe336e0b45bc0",
+        "version" : "1.1.6"
       }
     },
     {

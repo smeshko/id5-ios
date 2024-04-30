@@ -16,7 +16,8 @@ public extension Post.List.Response {
                 firstName: "Ivo",
                 lastName: "Tsonev",
                 email: "test@test.com"
-            ),
+            ), 
+            likes: 2,
             commentCount: 5,
             tags: []
         )
