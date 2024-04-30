@@ -73,7 +73,7 @@ public struct SignInFeature {
     
     @Dependency(\.accountClient) var accountClient
     @Dependency(\.trackingClient) var analytics
-    @Dependency(\.locationClient) var locationClient
+    @Dependency(\.locationService) var locationClient
     @Dependency(\.dismiss) var dismiss
     
     public var body: some Reducer<State, Action> {
@@ -81,7 +81,11 @@ public struct SignInFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                state.email = "root@localhost\(Int.random(in: 0...1000)).com"
+                state.password = "darkknight1"
+                state.confirmPassword = "darkknight1"
                 analytics.send(.view(.auth))
+                
             case .signInButtonTapped:
                 state.isLoading = true
                 return .run { [state] send in
@@ -98,33 +102,11 @@ public struct SignInFeature {
                 state.isLoading = true
                 return .run { [state] send in
                     analytics.send(.event(.signUpRequested))
-                    
-                    locationClient.requestAuthorization()
-                    var location: Entities.Location?
-                    for await event in locationClient.getLocation() {
-                        switch event {
-                        case .didUpdateLocations(let locations):
-                            if let first = locations.first {
-                                if let address = try await locationClient.convertToAddress(first).places.first {
-                                    location = Location(
-                                        address: address.address,
-                                        city: "",
-                                        zipcode: "",
-                                        longitude: address.longitude,
-                                        latitude: address.latitude,
-                                        radius: nil
-                                    )
-                                }
-                            }
-                        default: continue
-                        }
-                    }
-                    
                     let response = try await accountClient.signUp(
                         .init(
                             email: state.email,
                             password: state.password,
-                            location: location,
+                            location: .init(address: "", city: "", zipcode: "", longitude: 0, latitude: 0, radius: nil),
                             firstName: state.firstName,
                             lastName: state.lastName
                         )

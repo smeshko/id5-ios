@@ -58,6 +58,9 @@ public struct SignInView: View {
                     }
                 }
             }
+            .onAppear {
+                store.send(.onAppear)
+            }
             .padding()
             .scrollDismissesKeyboard(.interactively)
         }

@@ -65,7 +65,7 @@ let package = Package(
         .target(name: "LocationPickerFeature", dependencies: [tca, "LocationClient", "NetworkClient"]),
         .target(name: "MyProfileFeature", dependencies: [tca, "StyleGuide", "AccountClient", "SignInFeature"]),
         .target(name: "PostDetailsFeature", dependencies: [tca, entities, "StyleGuide", "Endpoints", "NetworkClient", "SharedKit"]),
-        .target(name: "CreatePostFeature", dependencies: [tca, camera, entities, "StyleGuide", "NetworkClient", "AccountClient", "SignInFeature", "Endpoints", "NetworkClient"]),
+        .target(name: "CreatePostFeature", dependencies: [tca, camera, entities, "StyleGuide", "NetworkClient", "AccountClient", "SignInFeature", "Endpoints"]),
         .target(name: "MainNavigationFeature", dependencies: [
             tca, "DiscoverFeature", "MyProfileFeature", "SettingsFeature", "CreatePostFeature", "LocationPickerFeature"
         ]),
