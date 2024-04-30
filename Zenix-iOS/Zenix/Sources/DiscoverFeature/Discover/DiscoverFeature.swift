@@ -51,7 +51,8 @@ public struct DiscoverFeature {
                 }
                 
             case .didReceivePosts(.success(let posts)):
-                state.cards = posts.map(DiscoverCardFeature.State.init(post:)).identified
+                state.cards = posts.sorted(by: { $0.createdAt.compare($1.createdAt) == .orderedDescending })
+                    .map(DiscoverCardFeature.State.init(post:)).identified
             
             case .didReceivePosts(.failure(let error)):
                 if let error = error as? ZenixError {

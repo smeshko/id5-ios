@@ -4,11 +4,12 @@ import Dependencies
 import NetworkClient
 import Endpoints
 
+fileprivate let manager = CLLocationManager()
+fileprivate let delegate = LocationManagerDelegate()
+
 public extension LocationClient {
     static var live: LocationClient = {
-        let manager = CLLocationManager()
         var stream: AsyncStream<LocationStateChangeEvent>?
-        let delegate = LocationManagerDelegate()
         @Dependency(\.networkService) var networkService
 
         manager.delegate = delegate
@@ -18,9 +19,7 @@ public extension LocationClient {
                 switch manager.authorizationStatus {
                 case .notDetermined:
                     manager.requestWhenInUseAuthorization()
-                case .authorizedWhenInUse:
-                    manager.requestAlwaysAuthorization()
-                case .authorizedAlways, .denied, .restricted:
+                case .authorizedAlways, .authorizedWhenInUse, .denied, .restricted:
                     break
                 @unknown default:
                     break

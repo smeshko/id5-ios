@@ -2,6 +2,7 @@ import AccountClient
 import AuthenticationServices
 import ComposableArchitecture
 import Entities
+import LocationClient 
 import SharedKit
 import TrackingClient
 
@@ -71,8 +72,9 @@ public struct SignInFeature {
     }
     
     @Dependency(\.accountClient) var accountClient
-    @Dependency(\.dismiss) var dismiss
     @Dependency(\.trackingClient) var analytics
+    @Dependency(\.locationClient) var locationClient
+    @Dependency(\.dismiss) var dismiss
     
     public var body: some Reducer<State, Action> {
         BindingReducer()
@@ -96,11 +98,33 @@ public struct SignInFeature {
                 state.isLoading = true
                 return .run { [state] send in
                     analytics.send(.event(.signUpRequested))
+                    
+                    locationClient.requestAuthorization()
+                    var location: Entities.Location?
+                    for await event in locationClient.getLocation() {
+                        switch event {
+                        case .didUpdateLocations(let locations):
+                            if let first = locations.first {
+                                if let address = try await locationClient.convertToAddress(first).places.first {
+                                    location = Location(
+                                        address: address.address,
+                                        city: "",
+                                        zipcode: "",
+                                        longitude: address.longitude,
+                                        latitude: address.latitude,
+                                        radius: nil
+                                    )
+                                }
+                            }
+                        default: continue
+                        }
+                    }
+                    
                     let response = try await accountClient.signUp(
                         .init(
                             email: state.email,
                             password: state.password,
-                            location: .init(address: "", city: "", zipcode: "", longitude: 0, latitude: 0, radius: 0),
+                            location: location,
                             firstName: state.firstName,
                             lastName: state.lastName
                         )
