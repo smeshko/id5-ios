@@ -81,9 +81,11 @@ public struct SignInFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                #if DEBUG
                 state.email = "root@localhost\(Int.random(in: 0...1000)).com"
                 state.password = "darkknight1"
                 state.confirmPassword = "darkknight1"
+                #endif
                 analytics.send(.view(.auth))
                 
             case .signInButtonTapped:
