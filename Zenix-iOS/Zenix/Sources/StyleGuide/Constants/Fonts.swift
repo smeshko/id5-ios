@@ -1,10 +1,10 @@
 import SwiftUI
 
-extension Font {
+public extension Font {
     enum zenix {
-        static let largeTitle: Font = .title
-        static let title: Font = .title3
-        static let subtitle: Font = .footnote.bold()
-        static let text: Font = .body
+        /// 8
+        public static let f1: Font = .system(size: 8)
+        /// 12
+        public static let f2: Font = .system(size: 12)
     }
 }

@@ -2,14 +2,12 @@ import AccountClient
 import ComposableArchitecture
 import Endpoints
 import Entities
-import NetworkClient
+import MediaClient
 import PhotosUI
+import PostClient
 import SharedKit
 import SignInFeature
 import SwiftUI
-
-extension Media.Upload.Request: JSONEncodable {}
-extension Post.Create.Request: JSONEncodable {}
 
 @Reducer
 public struct CreatePostFeature {
@@ -26,7 +24,7 @@ public struct CreatePostFeature {
     public struct State {
         @Presents var destination: Destination.State?
         
-        var title: String = ""
+        var title: String = "This is a title"
         var text: String = "This is a post created from the iOS app!!"
         var selectedItems: [PhotosPickerItem] = []
         var selectedImages: [Image] = []
@@ -50,8 +48,8 @@ public struct CreatePostFeature {
     }
     
     @Dependency (\.accountClient) var accountClient
-//    @Dependency (\.networkService) var networkService
-    @Dependency (\.authorizedNetworkService) var networkService
+    @Dependency (\.postClient) var postClient
+    @Dependency (\.mediaClient) var mediaClient
     
     public var body: some Reducer<State, Action> {
         BindingReducer()
@@ -66,12 +64,12 @@ public struct CreatePostFeature {
                 return .run { [state] send in
                     var storage: [UUID] = []
                     for imageData in state.selectedImagesRequests {
-                        let response: Media.Upload.Response = try await networkService.sendRequest(to: MediaEndpoint.upload(imageData.encoded))
+                        let response: Media.Upload.Response = try await mediaClient.upload(imageData)
                         storage.append(response.id)
                     }
                     
-                    let request = Post.Create.Request.init(text: state.text, imageIDs: storage, videoIDs: [])
-                    let response: Post.Create.Response = try await networkService.sendRequest(to: PostEndpoint.createPost(request.encoded))
+                    let request = Post.Create.Request.init(title: state.title, text: state.text, imageIDs: storage, videoIDs: [])
+                    let response = try await postClient.create(request)
                     await send(.didCreatePost(.success(response)))
                 } catch: { error, send in
                     await send(.didCreatePost(.failure(error)))

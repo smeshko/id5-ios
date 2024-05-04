@@ -2,10 +2,9 @@ import ComposableArchitecture
 import Endpoints
 import Entities
 import Foundation
-import NetworkClient
+import MediaClient
+import PostClient
 import SharedKit
-
-extension Comment.Create.Request: JSONEncodable {}
 
 @Reducer
 public struct PostDetailsFeature {
@@ -39,8 +38,8 @@ public struct PostDetailsFeature {
         case didReceiveImage(Result<Media.Download.Response, Error>)
     }
     
-    @Dependency(\.networkService) var networkService
-    @Dependency(\.authorizedNetworkService) var authNetworkService
+    @Dependency(\.postClient) var postClient
+    @Dependency(\.mediaClient) var mediaClient
     
     public var body: some Reducer<State, Action> {
         BindingReducer()
@@ -48,7 +47,7 @@ public struct PostDetailsFeature {
             switch action {
             case .onAppear:
                 return .run { [state] send in
-                    let response: Post.Detail.Response = try await networkService.sendRequest(to: PostEndpoint.postDetails(state.postId))
+                    let response = try await postClient.details(state.postId)
                     
                     await send(.didReceivePostDetails(.success(response)))
                 } catch: { error, send in
@@ -61,7 +60,7 @@ public struct PostDetailsFeature {
                 return .concatenate(
                     post.imageIDs.map({ id in
                         return Effect.run { send in
-                            let response: Media.Download.Response = try await networkService.sendRequest(to: MediaEndpoint.download(id))
+                            let response = try await mediaClient.download(id)
                             await send(.didReceiveImage(.success(response)))
                         } catch: { error, send in
                             await send(.didReceiveImage(.failure(error)))
@@ -71,8 +70,8 @@ public struct PostDetailsFeature {
                 
             case .didCommitComment:
                 return .run { [state] send in
-                    let comment = Comment.Create.Request(text: state.newComment).encoded
-                    let response: [Comment.List.Response] = try await authNetworkService.sendRequest(to: PostEndpoint.createComment(comment, state.postId))
+                    let comment = Comment.Create.Request(text: state.newComment)
+                    let response = try await postClient.createComment(comment, state.postId)
                     
                     await send(.didReceiveComments(.success(response)))
                 } catch: { error, send in

@@ -10,6 +10,13 @@ public struct DiscoverView: View {
         self.store = store
     }
     
+    
+    let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
+
+    
     public var body: some View {
         NavigationStack(
             path: $store.scope(state: \.path, action: \.path)
@@ -20,12 +27,21 @@ public struct DiscoverView: View {
                         .foregroundStyle(.red)
                         .bold()
                 }
-                ForEach(store.scope(state: \.cards, action: \.cards)) { cardStore in
-                    NavigationLink(state: DiscoverFeature.Path.State.postDetails(.init(postId: cardStore.post.id))) {
-                        DiscoverCardView(store: cardStore)
+                
+                LazyVGrid(columns: columns, spacing: 20) {
+                    ForEach(store.scope(state: \.cards, action: \.cards)) { cardStore in
+                        NavigationLink(state: DiscoverFeature.Path.State.postDetails(.init(postId: cardStore.post.id))) {
+                            DiscoverCardView(store: cardStore)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
+//                ForEach(store.scope(state: \.cards, action: \.cards)) { cardStore in
+//                    NavigationLink(state: DiscoverFeature.Path.State.postDetails(.init(postId: cardStore.post.id))) {
+//                        DiscoverCardView(store: cardStore)
+//                    }
+//                    .buttonStyle(.plain)
+//                }
             }
             .padding()
             .toolbar {
@@ -66,6 +82,7 @@ public struct DiscoverView: View {
                 }
             }
         }
+        .background(Color.zenix.background)
         .onAppear {
             store.send(.didAppear)
         }

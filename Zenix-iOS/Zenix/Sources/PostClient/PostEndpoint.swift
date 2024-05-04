@@ -1,6 +1,7 @@
+import Endpoints
 import Foundation
 
-public enum PostEndpoint: Endpoint {
+enum PostEndpoint: Endpoint {
 
     case allPosts
     case postDetails(_ id: UUID)
@@ -9,7 +10,7 @@ public enum PostEndpoint: Endpoint {
     case createComment(_ text: Data, _ post: UUID)
     case commentsForPost(_ post: UUID)
     
-    public var path: String {
+    var path: String {
         switch self {
         case .allPosts: "/api/posts/all"
         case .postDetails(let id): "/api/posts/\(id)"
@@ -20,14 +21,14 @@ public enum PostEndpoint: Endpoint {
         }
     }
     
-    public var method: HTTPMethod {
+    var method: HTTPMethod {
         switch self {
         case .allPosts, .postDetails, .commentsForPost: .get
         case .createComment, .createPost: .post
         }
     }
     
-    public var body: Data? {
+    var body: Data? {
         switch self {
         case .createComment(let text, _): text
         case .createPost(let request): request

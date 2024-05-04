@@ -2,9 +2,12 @@ import ComposableArchitecture
 import Entities
 import StyleGuide
 import SwiftUI
+import SharedKit
+import SharedViews
 
-public struct DiscoverCardView: View {
+public struct DiscoverCardView: View, Updateable {
     @Bindable var store: StoreOf<DiscoverCardFeature>
+    @State private var width: CGFloat = 0
     
     public init(store: StoreOf<DiscoverCardFeature>) {
         self.store = store
@@ -12,27 +15,55 @@ public struct DiscoverCardView: View {
     
     public var body: some View {
         VStack(alignment: .leading) {
-            ZenixImage(media: store.thumbnail)
+            AsyncZenixImage(mediaID: store.thumbnailID)
+                .frame(width: width, height: 180)
             
-            HStack {
-                HStack(spacing: 0) {
-                    Image(systemName: "text.bubble.fill")
-                    Text("\(store.post.commentCount)")
+            Group {
+                Text(store.post.title)
+                    .font(.zenix.f2)
+                    .lineLimit(2)
+                
+                HStack(spacing: Spacing.sp100) {
+                    if let avatarID = store.avatarID {
+                        AsyncZenixImage(mediaID: avatarID)
+                            .frame(width: 10, height: 10)
+                            .clipShape(Circle())
+                    }
+                    
+                    Text(store.post.user.fullName)
+                        .font(.zenix.f1)
+                        .lineLimit(1)
+                    
+                    Text(store.post.formattedCreatedAt)
+                        .font(.zenix.f1)
+                        .foregroundStyle(.gray.opacity(0.5))
+                    
+                    Spacer()
+                    
+                    HStack(spacing: Spacing.sp100) {
+                        Image(systemName: "hand.thumbsup")
+                            .font(.zenix.f2)
+                        Text("\(store.post.likes)")
+                            .font(.zenix.f1)
+                    }
+                    .padding(.bottom, Spacing.sp200)
                 }
-                .font(.caption)
-                
-                Spacer()
-                
-                Text(
-                    store.post.createdAt
-                        .formatted(.relative(presentation: .named, unitsStyle: .narrow))
-                )
-                .font(.caption)
             }
-            Text(store.post.text)
-                .onAppear {
-                    store.send(.onAppear)
-                }
+            .padding(.horizontal, Spacing.sp200)
+        }
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.r200))
+        .onAppear {
+            store.send(.onAppear)
+        }
+        .overlay {
+            GeometryReader { geo in
+                RoundedRectangle(cornerRadius: Radius.r200)
+                    .stroke(.black.opacity(0.1), lineWidth: 1)
+                    .onAppear {
+                        width = geo.size.width
+                    }
+            }
         }
     }
 }
@@ -43,7 +74,12 @@ public struct DiscoverCardView: View {
             initialState: .init(
                 post: .mock(createdAt: .now - 100000)
             ),
-            reducer: DiscoverCardFeature.init
+            reducer: DiscoverCardFeature.init,
+            withDependencies: { values in
+                values.mediaClient.download = { _ in
+                        .init(data: UIImage(named: "image", in: .module, with: nil)!.pngData()!)
+                }
+            }
         )
     )
 }

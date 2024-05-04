@@ -2,6 +2,7 @@ import ComposableArchitecture
 import Entities
 import StyleGuide
 import SwiftUI
+import SharedKit
 
 public struct PostDetailsView: View {
     @Bindable var store: StoreOf<PostDetailsFeature>
@@ -89,13 +90,4 @@ struct CommentView: View {
             reducer: PostDetailsFeature.init
         )
     )
-}
-
-extension User.List.Response {
-    var fullName: String {
-        PersonNameComponents(
-            givenName: firstName,
-            familyName: lastName
-        ).formatted()
-    }
 }

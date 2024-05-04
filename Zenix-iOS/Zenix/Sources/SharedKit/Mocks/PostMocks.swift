@@ -8,6 +8,7 @@ public extension Post.List.Response {
     ) -> Post.List.Response {
         self.init(
             id: .init(),
+            title: "This is a short title",
             createdAt: createdAt,
             text: text,
             thumbnail: .init(),

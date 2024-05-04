@@ -11,6 +11,6 @@ public struct ZenixImage: View {
     public var body: some View {
         Image(uiImage: .init(data: media?.data ?? Data()) ?? .init())
             .resizable()
-            .aspectRatio(contentMode: .fit)
+            .aspectRatio(contentMode: .fill)
     }
 }

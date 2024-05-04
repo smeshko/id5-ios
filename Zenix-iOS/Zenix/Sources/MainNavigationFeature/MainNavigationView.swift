@@ -27,7 +27,7 @@ public struct MainNavigationView: View {
             }
             .tag(MainNavigationFeature.Tab.discover)
             .tabItem {
-                Label("Discover", systemImage: "hand.wave.fill")
+                Label("Discover", systemImage: "eye.fill")
             }
             
             NavigationStack {

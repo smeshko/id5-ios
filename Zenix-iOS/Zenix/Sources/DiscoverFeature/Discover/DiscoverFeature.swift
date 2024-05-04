@@ -1,8 +1,7 @@
 import ComposableArchitecture
-import PostDetailsFeature
-import Endpoints
 import Entities
-import NetworkClient
+import PostClient
+import PostDetailsFeature
 import SharedKit
 
 @Reducer
@@ -32,8 +31,8 @@ public struct DiscoverFeature {
         case path(StackAction<Path.State, Path.Action>)
     }
 
-    @Dependency(\.networkService) var networkService
-
+    @Dependency(\.postClient) var postClient
+    
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
@@ -44,7 +43,7 @@ public struct DiscoverFeature {
             case .fetchPosts:
                 state.cards = []
                 return .run { send in
-                    let response: [Post.List.Response] = try await networkService.sendRequest(to: PostEndpoint.allPosts)
+                    let response: [Post.List.Response] = try await postClient.all()
                     await send(.didReceivePosts(.success(response)))
                 } catch: { error, send in
                     await send(.didReceivePosts(.failure(error)))
