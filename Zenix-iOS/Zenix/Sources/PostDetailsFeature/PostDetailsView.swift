@@ -3,38 +3,122 @@ import Entities
 import StyleGuide
 import SwiftUI
 import SharedKit
+import SharedViews
 
 public struct PostDetailsView: View {
-    @Bindable var store: StoreOf<PostDetailsFeature>
+    enum Field: Int, CaseIterable {
+        case comment
+    }
     
+    @Bindable var store: StoreOf<PostDetailsFeature>
+    @State private var currentIndex = 0
+    @FocusState private var focusedField: Field?
+
     public init(store: StoreOf<PostDetailsFeature>) {
         self.store = store
     }
     
     public var body: some View {
-        VStack(alignment: .leading) {
+        GeometryReader { geo in
             if let error = store.error {
                 Text(error)
                     .foregroundStyle(.red)
                     .bold()
             }
             if let post = store.post {
-                ScrollView {
-                    ZenixImage(media: store.images.first)
-                    
-                    Text(post.text)
-                    ForEach(store.comments, id: \.id) { comment in
-                        CommentView(comment: comment)
-                    }
-                    ZenixInputField("comment", text: $store.newComment)
-                        .onSubmit {
-                            store.send(.didCommitComment)
+                VStack(alignment: .leading) {
+                    ScrollView {
+                        VStack(alignment: .leading) {
+                            ZStack(alignment: .bottomTrailing) {
+                                TabView(selection: $currentIndex) {
+                                    ForEach(Array(store.imageIDs.enumerated()), id: \.1) { index, id in
+                                        AsyncZenixImage(mediaID: id)
+                                            .parentWidth(geo.size.width)
+                                            .tag(index)
+                                    }
+                                }
+                                .tabViewStyle(.page)
+                                
+                                Text("\(currentIndex + 1)/\(store.imageIDs.count)")
+                                    .padding()
+                                    .font(.zenix.f2)
+                                    .foregroundStyle(.white)
+                            }
+                            .frame(height: 395)
+                            
+                            Group {
+                                Text(post.title)
+                                    .font(.zenix.f4)
+                                    .padding(.top, Spacing.sp300)
+                                
+                                Text(post.text)
+                                    .font(.zenix.f3)
+                                    .foregroundStyle(.gray)
+                                    .padding(.top, Spacing.sp200)
+                                
+                                Text("Posted on \(post.createdAt.formatted(date: .numeric, time: .omitted))")
+                                    .font(.zenix.f2)
+                                    .foregroundStyle(.gray)
+                                    .padding(.top, Spacing.sp300)
+
+                                Divider()
+                                    .padding(.top, Spacing.sp300)
+
+                                if !store.comments.isEmpty {
+                                    Text("\(store.comments.count) comments")
+                                        .font(.zenix.f5)
+                                        .padding(.top, Spacing.sp300)
+                                    
+                                    ForEach(store.comments, id: \.id) { comment in
+                                        CommentView(comment: comment)
+                                    }
+                                    .padding(.top, Spacing.sp400)
+                                }
+                                
+                            }
+                            .padding(.horizontal)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .scrollDismissesKeyboard(.interactively)
+                    .scrollIndicators(.hidden)
+                    
+                    Divider()
+                    
+                    HStack {
+                        TextField("type in...", text: $store.newComment)
+                            .onSubmit {
+                                store.send(.didCommitComment)
+                            }
+                            .padding(
+                                EdgeInsets(
+                                    top: Spacing.sp200,
+                                    leading: Spacing.sp200,
+                                    bottom: Spacing.sp200,
+                                    trailing: Spacing.sp200
+                                )
+                            )
+                            .overlay {
+                                Capsule()
+                                    .stroke(.black.opacity(0.1), lineWidth: 1)
+                            }
+                            .focused($focusedField, equals: .comment)
+                            .keyboardType(.alphabet)
+                            .autocorrectionDisabled()
+                        
+                        Spacer()
+                        
+                        Label("\(post.likes)", systemImage: "hand.thumbsup.fill")
+                            .font(.zenix.f2)
+                        Label("\(post.comments.count)", systemImage: "text.bubble.fill")
+                            .font(.zenix.f2)
+                    }
+                    .padding()
                 }
-                .scrollIndicators(.hidden)
             }
         }
-        .padding()
+        .toolbar(.hidden, for: .tabBar)
+        .fieldFocus($focusedField)
         .onAppear {
             store.send(.onAppear)
         }
@@ -45,24 +129,25 @@ struct CommentView: View {
     let comment: Comment.List.Response
     
     var body: some View {
-        VStack(alignment: .leading) {
-            HStack {
+        HStack(alignment: .top, spacing: Spacing.sp200) {
+            if let id = comment.user.avatar {
+                AsyncZenixImage(mediaID: id)
+                    .frame(width: 36, height: 36)
+                    .clipShape(Circle())
+            }
+            VStack(alignment: .leading, spacing: Spacing.sp100) {
                 Text(comment.user.fullName)
-                    .font(.subheadline.bold())
-                Spacer()
+                    .font(.zenix.f5)
+                    .foregroundStyle(.gray)
+                
+                Text(comment.text)
+                    .font(.zenix.f5)
+
                 Text(comment.createdAt, format: Date.FormatStyle(date: .abbreviated, time: .omitted))
-                    .font(.caption2)
+                    .font(.zenix.f2)
                     .foregroundStyle(Color.gray.opacity(0.7))
             }
-            Text(comment.text)
         }
-        .padding()
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(Radius.r200)
-        .overlay(
-            RoundedRectangle(cornerRadius: Radius.r200)
-                .stroke(.black.opacity(0.2), lineWidth: 1)
-        )
     }
 }
 

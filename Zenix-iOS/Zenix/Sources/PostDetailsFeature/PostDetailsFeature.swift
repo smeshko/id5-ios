@@ -16,6 +16,7 @@ public struct PostDetailsFeature {
         var post: Post.Detail.Response? = nil
         var comments: [Comment.List.Response] = []
         var images: [Media.Download.Response] = []
+        var imageIDs: [UUID] = []
         var newComment: String
         var error: String?
         
@@ -57,16 +58,7 @@ public struct PostDetailsFeature {
             case .didReceivePostDetails(.success(let post)):
                 state.post = post
                 state.comments = post.comments
-                return .concatenate(
-                    post.imageIDs.map({ id in
-                        return Effect.run { send in
-                            let response = try await mediaClient.download(id)
-                            await send(.didReceiveImage(.success(response)))
-                        } catch: { error, send in
-                            await send(.didReceiveImage(.failure(error)))
-                        }
-                    })
-                )
+                state.imageIDs = post.imageIDs
                 
             case .didCommitComment:
                 return .run { [state] send in

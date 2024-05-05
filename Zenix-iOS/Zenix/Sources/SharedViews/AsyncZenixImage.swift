@@ -1,9 +1,10 @@
 import Dependencies
 import Entities
 import MediaClient
+import StyleGuide
 import SwiftUI
 
-public struct AsyncZenixImage: View {
+public struct AsyncZenixImage: View, Updateable {
     enum LoadingState: Equatable {
         case done(Image)
         case loading
@@ -12,6 +13,7 @@ public struct AsyncZenixImage: View {
     
     private let mediaID: UUID
     @State private var loadingState: LoadingState = .loading
+    private var width: CGFloat?
     @Dependency(\.mediaClient) private var mediaClient
     
     public init(mediaID: UUID) {
@@ -30,13 +32,15 @@ public struct AsyncZenixImage: View {
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .clipped()
-                
+                    .frame(width: width)
+                    .clipShape(Rectangle())
+
             case .error:
                 Image(systemName: "xmark.icloud")
                     .foregroundStyle(.red)
             }
         }
+        .clipped()
         .onAppear {
             Task {
                 try await loadImage()
@@ -45,6 +49,10 @@ public struct AsyncZenixImage: View {
     }
     
     private func loadImage() async throws {
+        if case .done(_) = loadingState {
+            return
+        }
+        
         loadingState = .loading
         do {
             let response = try await mediaClient.download(mediaID)
@@ -53,6 +61,10 @@ public struct AsyncZenixImage: View {
         } catch {
             loadingState = .error
         }
+    }
+    
+    public func parentWidth(_ width: CGFloat) -> Self {
+        update(\.width, value: width)
     }
 }
 

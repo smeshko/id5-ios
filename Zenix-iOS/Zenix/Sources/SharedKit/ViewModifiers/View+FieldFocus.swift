@@ -14,16 +14,17 @@ struct FieldFocusView<Content: View, T: Hashable & CaseIterable & RawRepresentab
             .toolbar {
                 ToolbarItem(placement: .keyboard) {
                     HStack {
-                        Button(action: previousFocus) {
-                            Image(systemName: "chevron.up")
+                        if T.allCases.count > 1 {
+                            Button(action: previousFocus) {
+                                Image(systemName: "chevron.up")
+                            }
+                            .disabled(!canSelectPreviousField)
+                            
+                            Button(action: nextFocus) {
+                                Image(systemName: "chevron.down")
+                            }
+                            .disabled(!canSelectNextField)
                         }
-                        .disabled(!canSelectPreviousField)
-                        
-                        Button(action: nextFocus) {
-                            Image(systemName: "chevron.down")
-                        }
-                        .disabled(!canSelectNextField)
-                        
                         Spacer()
                         Button("Done") {
                             focusedField.wrappedValue = nil
