@@ -16,10 +16,19 @@ public extension MediaClient {
     static let live: MediaClient = {
         @Dependency(\.networkService) var networkService
         @Dependency(\.authorizedNetworkService) var authorizedNetworkService
+        let cache = NSCache<AnyObject, AnyObject>()
 
         return .init(
             download: { id in
-                try await networkService.sendRequest(to: MediaEndpoint.download(id))
+                if let cached = cache.object(forKey: id.uuidString as NSString) as? NSData {
+                    return .init(data: cached as Data)
+                }
+                
+                let response: Media.Download.Response = try await networkService
+                    .sendRequest(to: MediaEndpoint.download(id))
+                cache.setObject(response.data as NSData, forKey: id.uuidString as NSString)
+                
+                return response
             },
             upload: { request in
                 try await authorizedNetworkService.sendRequest(to: MediaEndpoint.upload(request.encoded))
