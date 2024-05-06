@@ -5,11 +5,13 @@ public struct LocalStorageClient {
     public enum Key: String {
         case baseURL
         case userLocation
+        case recentSearches
     }
     
     public var setValue: (Any, Key) -> Void
     public var string: (Key) -> String?
     public var data: (Key) -> Data?
+    public var strings: (Key) -> [String]
 }
 
 public extension LocalStorageClient {
@@ -23,7 +25,11 @@ public extension LocalStorageClient {
             },
             data: { key in
                 UserDefaults.standard.value(forKey: key.rawValue) as? Data
-            })
+            },
+            strings: { key in
+                UserDefaults.standard.array(forKey: key.rawValue) as? [String] ?? []
+            }
+        )
     }()
 }
 

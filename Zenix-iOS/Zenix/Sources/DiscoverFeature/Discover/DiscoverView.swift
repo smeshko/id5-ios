@@ -5,17 +5,15 @@ import SwiftUI
 
 public struct DiscoverView: View {
     @Bindable var store: StoreOf<DiscoverFeature>
-        
-    public init(store: StoreOf<DiscoverFeature>) {
-        self.store = store
-    }
     
-    
-    let columns = [
+    private let columns = [
         GridItem(.flexible()),
         GridItem(.flexible())
     ]
-
+    
+    public init(store: StoreOf<DiscoverFeature>) {
+        self.store = store
+    }
     
     public var body: some View {
         NavigationStack(
@@ -27,7 +25,7 @@ public struct DiscoverView: View {
                         .foregroundStyle(.red)
                         .bold()
                 }
-                
+
                 LazyVGrid(columns: columns, spacing: 20) {
                     ForEach(store.scope(state: \.cards, action: \.cards)) { cardStore in
                         NavigationLink(state: DiscoverFeature.Path.State.postDetails(.init(postId: cardStore.post.id))) {
@@ -36,43 +34,23 @@ public struct DiscoverView: View {
                         .buttonStyle(.plain)
                     }
                 }
-//                ForEach(store.scope(state: \.cards, action: \.cards)) { cardStore in
-//                    NavigationLink(state: DiscoverFeature.Path.State.postDetails(.init(postId: cardStore.post.id))) {
-//                        DiscoverCardView(store: cardStore)
-//                    }
-//                    .buttonStyle(.plain)
-//                }
             }
             .padding()
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     CurrentLocationView(store: store)
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: {
+                        store.send(.didTapSearchButton)
+                    }, label: {
+                        Image(systemName: "magnifyingglass")
+                    })
+                }
             }
             .refreshable {
                 store.send(.fetchPosts)
             }
-//            .searchable(text: $query)
-//            .searchSuggestions({
-//                VStack(alignment: .leading) {
-//                    HStack {
-//                        ForEach(tokens, id: \.id) { token in
-//                            Text(token.t)
-//                                .searchCompletion(token.t)
-//                                .padding(Spacing.sp200)
-//                                .background(Color.gray.opacity(0.2))
-//                                .foregroundStyle(.white)
-//                                .clipShape(RoundedRectangle(cornerRadius: Radius.r200))
-//                        }
-//                    }
-//                    ForEach(store.scope(state: \.cards, action: \.cards)) { cardStore in
-//                        NavigationLink(state: DiscoverFeature.Path.State.postDetails(.init(postId: cardStore.post.id))) {
-//                            DiscoverCardView(store: cardStore)
-//                        }
-//                        .buttonStyle(.plain)
-//                    }
-//                }
-//            })
             .scrollIndicators(.hidden)
         } destination: { store in
             switch store.state {
@@ -82,9 +60,23 @@ public struct DiscoverView: View {
                 }
             }
         }
+        .fullScreenCover(
+            item: $store.scope(state: \.search, action: \.searchAction),
+            content: { searchStore in
+                SearchView(store: searchStore)
+                    .animation(.easeIn, value: store.search)
+                    .transition(.opacity)
+            }
+        )
+//        .fullScreenCover(
+//            item: $store.scope(state: \.search, action: \.searchAction),
+//            content: { store in
+//                SearchView(store: store)
+//            }
+//        )
         .background(Color.zenix.background)
         .onAppear {
-            store.send(.didAppear)
+            store.send(.onAppear)
         }
     }
 }

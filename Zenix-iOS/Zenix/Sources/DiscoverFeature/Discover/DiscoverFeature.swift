@@ -10,9 +10,11 @@ public struct DiscoverFeature {
     
     @ObservableState
     public struct State: Equatable {
+        @Presents var search: SearchFeature.State?
         var cards: IdentifiedArrayOf<DiscoverCardFeature.State>
         var path = StackState<Path.State>()
         var error: String?
+        var searchQuery: String = ""
 
         public init(
             cards: IdentifiedArrayOf<DiscoverCardFeature.State> = []
@@ -21,14 +23,18 @@ public struct DiscoverFeature {
         }
     }
     
-    public enum Action {
-        case didAppear
+    public enum Action: BindableAction {
+        case onAppear
         case fetchPosts
         
         case didReceivePosts(Result<[Post.List.Response], Error>)
         case cards(IdentifiedActionOf<DiscoverCardFeature>)
         
+        case didTapSearchButton
+        
+        case searchAction(PresentationAction<SearchFeature.Action>)
         case path(StackAction<Path.State, Path.Action>)
+        case binding(BindingAction<State>)
     }
 
     @Dependency(\.postClient) var postClient
@@ -36,7 +42,7 @@ public struct DiscoverFeature {
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
-            case .didAppear:
+            case .onAppear:
                 guard state.cards.isEmpty else { break }
                 return .send(.fetchPosts)
                 
@@ -60,11 +66,25 @@ public struct DiscoverFeature {
                     state.error = error.reason
                 }
                 
-            case .cards, .path:
+            case .didTapSearchButton:
+                state.search = .init()
+                
+            case .searchAction(let action):
+                switch action {
+                case .presented(.didTapCancelButton):
+                    state.search = nil
+                default:
+                    break
+                }
+                
+            case .cards, .path, .binding:
                 break
             }
             
             return .none
+        }
+        .ifLet(\.$search, action: \.searchAction) {
+            SearchFeature()
         }
         .forEach(\.path, action: \.path) {
             Path()
