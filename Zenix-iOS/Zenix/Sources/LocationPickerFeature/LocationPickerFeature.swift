@@ -25,18 +25,18 @@ public struct LocationPickerFeature {
             switch action {
             case .onAppear:
                 locationClient.requestAuthorization()
-                return .run { send in
-                    for await location in locationClient.getLocation() {
-                        if case let .didUpdateLocations(locations) = location, let location = locations.first {
-                            do {
-                                let places = try await locationClient.convertToAddress(location)
-                                await send(.didUpdatePlaces(.success(places)))
-                            } catch {
-                                await send(.didUpdatePlaces(.failure(error)))
-                            }
-                        }
-                    }
-                }
+//                return .run { send in
+//                    for await location in locationClient.getLocation() {
+//                        if case let .didUpdateLocations(locations) = location, let location = locations.first {
+//                            do {
+//                                let places = try await locationClient.convertToAddress(location)
+//                                await send(.didUpdatePlaces(.success(places)))
+//                            } catch {
+//                                await send(.didUpdatePlaces(.failure(error)))
+//                            }
+//                        }
+//                    }
+//                }
                 
             case .didUpdatePlaces(.success(let response)):
                 state.places = response.places

@@ -69,11 +69,12 @@ public struct SignInFeature {
         
         case appleAuthResponseReceived(Result<ASAuthorization, Error>)
         case userInfoReceived(Result<(User.Detail.Response, Auth.TokenRefresh.Response), Error>)
+        case didReceiveLocation(Places.Search.Response)
     }
     
     @Dependency(\.accountClient) var accountClient
     @Dependency(\.trackingClient) var analytics
-    @Dependency(\.locationService) var locationClient
+    @Dependency(\.locationClient) var locationClient
     @Dependency(\.dismiss) var dismiss
     
     public var body: some Reducer<State, Action> {
@@ -102,21 +103,13 @@ public struct SignInFeature {
             case .signUpButtonTapped:
                 guard state.password == state.confirmPassword, !state.password.isEmpty else { break }
                 state.isLoading = true
-                return .run { [state] send in
-                    analytics.send(.event(.signUpRequested))
-                    let response = try await accountClient.signUp(
-                        .init(
-                            email: state.email,
-                            password: state.password,
-                            location: .init(address: "", city: "", zipcode: "", longitude: 0, latitude: 0, radius: nil),
-                            firstName: state.firstName,
-                            lastName: state.lastName
-                        )
-                    )
-                    await send(.userInfoReceived(.success((response.user, response.token))))
-                } catch: { error, send in
-                    analytics.send(.error(.signUpFailed))
-                    await send(.userInfoReceived(.failure(error)))
+                locationClient.requestAuthorization()
+                return .run { send in
+                    let locationEvent = try await locationClient.getLocation()
+                    if case .didUpdateLocations(let locations) = locationEvent, let first = locations.first {
+                        let places = try await locationClient.convertToAddress(first)
+                        await send(.didReceiveLocation(places))
+                    }
                 }
                 
             case .forgotPasswordButtonTapped:
@@ -153,6 +146,34 @@ public struct SignInFeature {
                 case .failure:
                     analytics.send(.error(.appleAuthFailed))
                 }
+                
+            case .didReceiveLocation(let place):
+                guard let first = place.places.first else { break }
+                
+                return .run { [state] send in
+                    analytics.send(.event(.signUpRequested))
+                    let response = try await accountClient.signUp(
+                        .init(
+                            email: state.email,
+                            password: state.password,
+                            location: .init(
+                                address: first.address,
+                                city: "",
+                                zipcode: "",
+                                longitude: first.longitude,
+                                latitude: first.latitude,
+                                radius: nil
+                            ),
+                            firstName: state.firstName,
+                            lastName: state.lastName
+                        )
+                    )
+                    await send(.userInfoReceived(.success((response.user, response.token))))
+                } catch: { error, send in
+                    analytics.send(.error(.signUpFailed))
+                    await send(.userInfoReceived(.failure(error)))
+                }
+
                 
             case .userInfoReceived(let result):
                 state.isLoading = false

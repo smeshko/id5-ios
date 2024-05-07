@@ -33,13 +33,14 @@ public struct AddressPickerFeature {
     }
     
     @Dependency(\.networkService) var networkService
+    @Dependency(\.locationClient) var locationClient
     
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { state, action in
             switch action {
             case .onAppear:
-                break
+                locationClient.requestAuthorization()
                 
             case .binding(\.query):
                 return .run { [state] send in

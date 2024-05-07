@@ -44,6 +44,12 @@ public struct MainNavigationView: View {
             }
             
             NavigationStack {
+//                LocationPickerView(
+//                    store: .init(
+//                        initialState: .init(),
+//                        reducer: LocationPickerFeature.init
+//                    )
+//                )
                 AddressPickerView(
                     store: .init(
                         initialState: .init(),

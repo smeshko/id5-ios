@@ -20,6 +20,8 @@ public struct DiscoverView: View {
             path: $store.scope(state: \.path, action: \.path)
         ) {
             ScrollView {
+                Divider()
+
                 if let error = store.error {
                     Text(error)
                         .foregroundStyle(.red)
@@ -37,19 +39,22 @@ public struct DiscoverView: View {
             }
             .padding()
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    CurrentLocationView(store: store)
+                if !store.address.isEmpty {
+                    ToolbarItem(placement: .topBarLeading) {
+                        CurrentLocationView(store: store)
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         store.send(.didTapSearchButton)
                     }, label: {
                         Image(systemName: "magnifyingglass")
+                            .foregroundStyle(.gray)
                     })
                 }
             }
             .refreshable {
-                store.send(.fetchPosts)
+                store.send(.fetchPostsAndUser)
             }
             .scrollIndicators(.hidden)
         } destination: { store in
@@ -64,16 +69,8 @@ public struct DiscoverView: View {
             item: $store.scope(state: \.search, action: \.searchAction),
             content: { searchStore in
                 SearchView(store: searchStore)
-                    .animation(.easeIn, value: store.search)
-                    .transition(.opacity)
             }
         )
-//        .fullScreenCover(
-//            item: $store.scope(state: \.search, action: \.searchAction),
-//            content: { store in
-//                SearchView(store: store)
-//            }
-//        )
         .background(Color.zenix.background)
         .onAppear {
             store.send(.onAppear)
@@ -86,12 +83,17 @@ private struct CurrentLocationView: View {
     
     var body: some View {
         Button(action: {}, label: {
-            Text("Drin 1, 9000 Varna")
-                .frame(maxWidth: .infinity)
-                .padding(Spacing.sp200)
-                .background(Color.accentColor.opacity(0.5))
-                .foregroundStyle(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: Radius.r200))
+            HStack {
+                Text(store.address)
+                    .lineLimit(1)
+                Image(systemName: "chevron.down")
+            }
+            .font(.zenix.f2)
+            .frame(maxWidth: 190)
+            .padding(Spacing.sp200)
+            .background(.white)
+            .foregroundStyle(.black)
+            .clipShape(RoundedRectangle(cornerRadius: Radius.r200))
         })
     }
 }
