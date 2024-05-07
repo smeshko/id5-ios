@@ -9,3 +9,12 @@ public extension User.List.Response {
         ).formatted()
     }
 }
+
+public extension User.Detail.Response {
+    var fullName: String {
+        PersonNameComponents(
+            givenName: firstName,
+            familyName: lastName
+        ).formatted()
+    }
+}

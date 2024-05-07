@@ -40,8 +40,9 @@ public struct MyProfileFeature {
             switch action {
             case .onAppear:
                 if accountClient.isSignedIn() {
-                    return .run { send in
-                        let userInfo = try await accountClient.accountInfo()
+                    return .run { [state] send in
+                        // force update account info if no user details have been fetch already
+                        let userInfo = try await accountClient.accountInfo(state.userDetails == nil)
                         await send(.userInfoReceived(.success(userInfo)))
                     }
                     catch: { error, send in

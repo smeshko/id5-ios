@@ -5,9 +5,6 @@ import Foundation
 import NetworkClient
 import SharedKit
 
-extension Post.Create.Request: JSONEncodable {}
-extension Comment.Create.Request: JSONEncodable {}
-
 public struct PostClient {
     public var all: () async throws -> [Post.List.Response]
     public var details: (UUID) async throws -> Post.Detail.Response
@@ -30,10 +27,10 @@ public extension PostClient {
                 try await networkService.sendRequest(to: PostEndpoint.postDetails(id))
             },
             create: { request in
-                try await networkService.sendRequest(to: PostEndpoint.createPost(request.encoded))
+                try await networkService.sendRequest(to: PostEndpoint.createPost(request.jsonEncoded))
             },
             createComment: { request, postId in
-                try await authorizedNetworkService.sendRequest(to: PostEndpoint.createComment(request.encoded, postId))
+                try await authorizedNetworkService.sendRequest(to: PostEndpoint.createComment(request.jsonEncoded, postId))
             },
             commentsForPost: { id in
                 try await networkService.sendRequest(to: PostEndpoint.commentsForPost(id))

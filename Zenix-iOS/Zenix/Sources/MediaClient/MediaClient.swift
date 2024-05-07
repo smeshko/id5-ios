@@ -2,10 +2,9 @@ import Dependencies
 import Endpoints
 import Entities
 import Foundation
+import LocalStorageClient
 import NetworkClient
 import SharedKit
-
-extension Media.Upload.Request: JSONEncodable {}
 
 public struct MediaClient {
     public var download: (UUID) async throws -> Media.Download.Response
@@ -16,22 +15,21 @@ public extension MediaClient {
     static let live: MediaClient = {
         @Dependency(\.networkService) var networkService
         @Dependency(\.authorizedNetworkService) var authorizedNetworkService
-        let cache = NSCache<AnyObject, AnyObject>()
+        @Dependency(\.cacheClient) var cache
 
         return .init(
             download: { id in
-                if let cached = cache.object(forKey: id.uuidString as NSString) as? NSData {
-                    return .init(data: cached as Data)
+                if let cached = cache.getValue(id.uuidString) {
+                    return .init(data: cached)
                 }
                 
-                let response: Media.Download.Response = try await networkService
-                    .sendRequest(to: MediaEndpoint.download(id))
-                cache.setObject(response.data as NSData, forKey: id.uuidString as NSString)
+                let response: Media.Download.Response = try await networkService.sendRequest(to: MediaEndpoint.download(id))
+                cache.setValue(response.data, id.uuidString)
                 
                 return response
             },
             upload: { request in
-                try await authorizedNetworkService.sendRequest(to: MediaEndpoint.upload(request.encoded))
+                try await authorizedNetworkService.sendRequest(to: MediaEndpoint.upload(request.jsonEncoded))
             }
         )
     }()

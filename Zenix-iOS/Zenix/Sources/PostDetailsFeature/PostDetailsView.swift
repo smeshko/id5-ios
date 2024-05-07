@@ -11,8 +11,8 @@ public struct PostDetailsView: View {
     }
     
     @Bindable var store: StoreOf<PostDetailsFeature>
-    @State private var currentIndex = 0
     @FocusState private var focusedField: Field?
+    @State private var currentIndex = 0
 
     public init(store: StoreOf<PostDetailsFeature>) {
         self.store = store
@@ -86,37 +86,87 @@ public struct PostDetailsView: View {
                     Divider()
                     
                     HStack {
-                        TextField("type in...", text: $store.newComment)
-                            .onSubmit {
-                                store.send(.didCommitComment)
-                            }
-                            .padding(
-                                EdgeInsets(
-                                    top: Spacing.sp200,
-                                    leading: Spacing.sp200,
-                                    bottom: Spacing.sp200,
-                                    trailing: Spacing.sp200
+                        if store.isSignedIn {
+                            TextField("type in...", text: $store.newComment)
+                                .onSubmit {
+                                    store.send(.didCommitComment)
+                                }
+                                .padding(
+                                    EdgeInsets(
+                                        top: Spacing.sp200,
+                                        leading: Spacing.sp200,
+                                        bottom: Spacing.sp200,
+                                        trailing: Spacing.sp200
+                                    )
                                 )
-                            )
-                            .overlay {
-                                Capsule()
-                                    .stroke(.black.opacity(0.1), lineWidth: 1)
-                            }
-                            .focused($focusedField, equals: .comment)
-                            .keyboardType(.alphabet)
-                            .autocorrectionDisabled()
+                                .overlay {
+                                    Capsule()
+                                        .stroke(.black.opacity(0.1), lineWidth: 1)
+                                }
+                                .focused($focusedField, equals: .comment)
+                                .keyboardType(.alphabet)
+                                .autocorrectionDisabled()
+                        } else {
+                            Text("Sign in to comment")
+                                .font(.zenix.f5)
+                                .foregroundStyle(.gray)
+                        }
                         
                         Spacer()
                         
-                        Label("\(post.likes)", systemImage: "hand.thumbsup.fill")
-                            .font(.zenix.f2)
-                        Label("\(post.comments.count)", systemImage: "text.bubble.fill")
-                            .font(.zenix.f2)
+                        if focusedField == nil {
+                            Label("\(post.likes)", systemImage: "hand.thumbsup.fill")
+                                .font(.zenix.f2)
+                            Label("\(post.comments.count)", systemImage: "text.bubble.fill")
+                                .font(.zenix.f2)
+                        }
                     }
                     .padding()
                 }
+                .toolbar(content: {
+                    ToolbarItem(placement: .topBarLeading) {
+                        HStack {
+                            if let id = post.user.avatar {
+                                AsyncZenixImage(mediaID: id)
+                                    .frame(width: 30, height: 30)
+                                    .clipShape(Circle())
+                            }
+                            VStack(alignment: .leading) {
+                                Text(post.user.fullName)
+                                    .font(.zenix.f2)
+                                    .bold()
+                                Spacer()
+                            }
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .topBarTrailing) {
+                        HStack {
+                            Button(action: {
+                                store.send(.didTapFollowButton)
+                            }) {
+                                Text(store.isFollowing ? "Following" : "Follow")
+                                    .font(.zenix.f2)
+                                    .padding(.horizontal, Spacing.sp500)
+                                    .padding(.vertical, Spacing.sp200)
+                                    .background(.green)
+                                    .foregroundStyle(.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: Radius.r200))
+                            }
+                            
+                            Button(action: {
+                                
+                            }) {
+                                Image(systemName: "ellipsis")
+                                    .foregroundStyle(.gray.opacity(0.5))
+                            }
+                        }
+                    }
+
+                })
             }
         }
+        .toolbarRole(.editor)
         .toolbar(.hidden, for: .tabBar)
         .fieldFocus($focusedField)
         .onAppear {

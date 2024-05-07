@@ -9,6 +9,8 @@ public enum Spacing {
     public static let sp300: CGFloat = 16
     /// 24
     public static let sp400: CGFloat = 24
+    /// 12
+    public static let sp500: CGFloat = 12
 }
 
 public enum Radius {

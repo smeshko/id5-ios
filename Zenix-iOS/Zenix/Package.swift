@@ -50,19 +50,18 @@ let package = Package(
     targets: [
         .target(name: "StyleGuide", dependencies: [entities]),
         .target(name: "Endpoints", dependencies: [tca, "LocalStorageClient"]),
-        
+        .target(name: "SharedKit", dependencies: [entities, jwt, tca, "KeychainClient", "TrackingClient"]),
+        .target(name: "SharedViews", dependencies: [entities, tca, "StyleGuide", "MediaClient"], resources: [.process("Resources")]),
+
         .target(name: "LocalStorageClient", dependencies: [tca]),
         .target(name: "KeychainClient", dependencies: [tca, .product(name: "SwiftKeychainWrapper", package: "SwiftKeychainWrapper")]),
         .target(name: "NetworkClient", dependencies: [entities, tca, "KeychainClient", "Endpoints", "SharedKit"]),
-        .target(name: "AccountClient", dependencies: [entities, tca, "NetworkClient", "Endpoints", "SharedKit"]),
+        .target(name: "AccountClient", dependencies: [entities, tca, "NetworkClient", "Endpoints", "SharedKit", "LocalStorageClient"]),
         .target(name: "PostClient", dependencies: [entities, tca, "NetworkClient", "Endpoints", "SharedKit"]),
         .target(name: "AppAttestClient", dependencies: [tca, entities, "KeychainClient", "NetworkClient", "Endpoints"]),
         .target(name: "TrackingClient", dependencies: [tca, telemetry]),
         .target(name: "LocationClient", dependencies: [tca, entities, "NetworkClient", "Endpoints"]),
-        .target(name: "MediaClient", dependencies: [tca, entities, "NetworkClient", "Endpoints"]),
-        
-        .target(name: "SharedKit", dependencies: [entities, jwt, tca, "KeychainClient", "TrackingClient"]),
-        .target(name: "SharedViews", dependencies: [entities, tca, "StyleGuide", "MediaClient"], resources: [.process("Resources")]),
+        .target(name: "MediaClient", dependencies: [tca, entities, "NetworkClient", "Endpoints", "LocalStorageClient"]),
 
         .target(name: "AppFeature", dependencies: [tca, "MainNavigationFeature", "TrackingClient", "AppAttestClient", "KeychainClient", "SharedKit"]),
         .target(name: "SettingsFeature", dependencies: [tca, entities, "LocalStorageClient", "SharedKit"]),
@@ -70,7 +69,7 @@ let package = Package(
         .target(name: "DiscoverFeature", dependencies: [tca, "LocationClient", "NetworkClient", "PostDetailsFeature", "PostClient", "MediaClient", "SharedViews", "LocalStorageClient"], resources: [.process("Resources")]),
         .target(name: "LocationPickerFeature", dependencies: [tca, "LocationClient", "NetworkClient"]),
         .target(name: "MyProfileFeature", dependencies: [tca, "StyleGuide", "AccountClient", "SignInFeature"]),
-        .target(name: "PostDetailsFeature", dependencies: [tca, entities, "StyleGuide", "Endpoints", "NetworkClient", "SharedKit", "PostClient", "MediaClient"]),
+        .target(name: "PostDetailsFeature", dependencies: [tca, entities, "StyleGuide", "Endpoints", "NetworkClient", "SharedKit", "PostClient", "MediaClient", "AccountClient"]),
         .target(name: "CreatePostFeature", dependencies: [tca, camera, entities, "StyleGuide", "NetworkClient", "AccountClient", "SignInFeature", "Endpoints", "PostClient", "MediaClient"]),
         .target(name: "MainNavigationFeature", dependencies: [
             tca, "DiscoverFeature", "MyProfileFeature", "SettingsFeature", "CreatePostFeature", "LocationPickerFeature"

@@ -8,8 +8,6 @@ import LocalStorageClient
 import SharedKit
 import TrackingClient
 
-extension Metadata.Request: JSONEncodable {}
-
 @Reducer
 public struct AppFeature {
     public static let store: StoreOf<AppFeature> = .init(
@@ -75,7 +73,7 @@ public struct AppFeature {
             )
         )
         
-        return try await networkService.sendRequest(to: MetadataEndpoint.metadata(object.encoded))
+        return try await networkService.sendRequest(to: MetadataEndpoint.metadata(object.jsonEncoded))
     }
     
     private func setInitialSettings() {
