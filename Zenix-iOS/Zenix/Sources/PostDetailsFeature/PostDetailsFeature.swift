@@ -19,6 +19,7 @@ public struct PostDetailsFeature {
         var images: [Media.Download.Response] = []
         var isSignedIn = false
         var isFollowing = false
+        var isOwnPost = false
         var imageIDs: [UUID] = []
         var newComment: String
         var error: String?
@@ -67,6 +68,7 @@ public struct PostDetailsFeature {
                 let post = response.0
                 let user = response.1
                 state.post = post
+                state.isOwnPost = post.user.id == user.id
                 state.comments = post.comments
                 state.imageIDs = post.imageIDs
                 state.isFollowing = post.user.followers.contains(where: { $0.id == user.id })

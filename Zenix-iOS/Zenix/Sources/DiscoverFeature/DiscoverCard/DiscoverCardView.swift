@@ -16,7 +16,9 @@ public struct DiscoverCardView: View, Updateable {
     public var body: some View {
         VStack(alignment: .leading) {
             AsyncZenixImage(mediaID: store.thumbnailID)
-                .frame(width: width, height: 180)
+                .parentWidth(width)
+                .frame(height: 180)
+                .clipped()
             
             Group {
                 Text(store.post.title)

@@ -142,16 +142,18 @@ public struct PostDetailsView: View {
                     
                     ToolbarItem(placement: .topBarTrailing) {
                         HStack {
-                            Button(action: {
-                                store.send(.didTapFollowButton)
-                            }) {
-                                Text(store.isFollowing ? "Following" : "Follow")
-                                    .font(.zenix.f2)
-                                    .padding(.horizontal, Spacing.sp500)
-                                    .padding(.vertical, Spacing.sp200)
-                                    .background(.green)
-                                    .foregroundStyle(.white)
-                                    .clipShape(RoundedRectangle(cornerRadius: Radius.r200))
+                            if !store.isOwnPost {
+                                Button(action: {
+                                    store.send(.didTapFollowButton)
+                                }) {
+                                    Text(store.isFollowing ? "Following" : "Follow")
+                                        .font(.zenix.f2)
+                                        .padding(.horizontal, Spacing.sp500)
+                                        .padding(.vertical, Spacing.sp200)
+                                        .background(.green)
+                                        .foregroundStyle(.white)
+                                        .clipShape(RoundedRectangle(cornerRadius: Radius.r200))
+                                }
                             }
                             
                             Button(action: {
