@@ -7,7 +7,7 @@ import NetworkClient
 import SharedKit
 
 public struct MediaClient {
-    public var download: (UUID) async throws -> Media.Download.Response
+    public var download: (Media.Download.Request) async throws -> Media.Download.Response
     public var upload: (Media.Upload.Request) async throws -> Media.Upload.Response
 }
 
@@ -18,13 +18,15 @@ public extension MediaClient {
         @Dependency(\.cacheClient) var cache
 
         return .init(
-            download: { id in
-                if let cached = cache.getValue(id.uuidString) {
+            download: { request in
+                let key = "\(request.id.uuidString)_\(request.size.rawValue)"
+                
+                if let cached = cache.getValue(key) {
                     return .init(data: cached)
                 }
                 
-                let response: Media.Download.Response = try await networkService.sendRequest(to: MediaEndpoint.download(id))
-                cache.setValue(response.data, id.uuidString)
+                let response: Media.Download.Response = try await networkService.sendRequest(to: MediaEndpoint.download(request.jsonEncoded))
+                cache.setValue(response.data, key)
                 
                 return response
             },

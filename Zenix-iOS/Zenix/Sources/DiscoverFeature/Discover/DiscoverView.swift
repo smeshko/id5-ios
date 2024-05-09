@@ -19,44 +19,60 @@ public struct DiscoverView: View {
         NavigationStack(
             path: $store.scope(state: \.path, action: \.path)
         ) {
-            ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.sp500) {
                 Divider()
+                
+                CategoriesView(store: store.scope(state: \.categoriesState, action: \.categoriesAction))
 
-                if let error = store.error {
-                    Text(error)
-                        .foregroundStyle(.red)
-                        .bold()
-                }
-
-                LazyVGrid(columns: columns, spacing: 20) {
-                    ForEach(store.scope(state: \.cards, action: \.cards)) { cardStore in
-                        NavigationLink(state: DiscoverFeature.Path.State.postDetails(.init(postId: cardStore.post.id))) {
-                            DiscoverCardView(store: cardStore)
+                ScrollView {
+                    if let error = store.error {
+                        Text(error)
+                            .foregroundStyle(.red)
+                            .bold()
+                    }
+                    HStack(alignment: .top, spacing: Spacing.sp200) {
+                        LazyVStack(spacing: Spacing.sp200) {
+                            ForEach(store.scope(state: \.leftColumn, action: \.cards)) { cardStore in
+                                NavigationLink(state: DiscoverFeature.Path.State.postDetails(.init(postId: cardStore.post.id))) {
+                                    DiscoverCardView(store: cardStore)
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
-                        .buttonStyle(.plain)
+                        
+                        LazyVStack(spacing: Spacing.sp200) {
+                            ForEach(
+                                Array(store.scope(state: \.rightColumn, action: \.cards).enumerated()), id: \.1
+                            ) { index, cardStore in
+                                NavigationLink(state: DiscoverFeature.Path.State.postDetails(.init(postId: cardStore.post.id))) {
+                                    DiscoverCardView(store: cardStore, imageHeight: index == 0 ? 120 : 180)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .toolbar {
+                    if !store.address.isEmpty {
+                        ToolbarItem(placement: .topBarLeading) {
+                            CurrentLocationView(store: store)
+                        }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(action: {
+                            store.send(.didTapSearchButton)
+                        }, label: {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundStyle(.gray)
+                        })
                     }
                 }
-            }
-            .padding()
-            .toolbar {
-                if !store.address.isEmpty {
-                    ToolbarItem(placement: .topBarLeading) {
-                        CurrentLocationView(store: store)
-                    }
+                .refreshable {
+                    store.send(.fetchPostsAndUser)
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
-                        store.send(.didTapSearchButton)
-                    }, label: {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundStyle(.gray)
-                    })
-                }
+                .scrollIndicators(.hidden)
             }
-            .refreshable {
-                store.send(.fetchPostsAndUser)
-            }
-            .scrollIndicators(.hidden)
         } destination: { store in
             switch store.state {
             case .postDetails:

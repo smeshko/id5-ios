@@ -2,10 +2,9 @@ import Foundation
 import Dependencies
 
 public struct CacheClient {
-    public enum Key: String {
-        case accountInfo = "user_account_info"
+    public enum Key {
+        public static let accountInfo = "user_account_info"
     }
-
     public var setValue: (Data, String) -> Void
     public var getValue: (String) -> Data?
 }

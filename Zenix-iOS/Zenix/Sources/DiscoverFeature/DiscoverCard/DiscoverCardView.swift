@@ -9,15 +9,18 @@ public struct DiscoverCardView: View, Updateable {
     @Bindable var store: StoreOf<DiscoverCardFeature>
     @State private var width: CGFloat = 0
     
-    public init(store: StoreOf<DiscoverCardFeature>) {
+    private let imageHeight: CGFloat
+    
+    public init(store: StoreOf<DiscoverCardFeature>, imageHeight: CGFloat? = 180) {
         self.store = store
+        self.imageHeight = imageHeight ?? 180
     }
     
     public var body: some View {
         VStack(alignment: .leading) {
-            AsyncZenixImage(mediaID: store.thumbnailID)
+            AsyncZenixImage(mediaID: store.thumbnailID, size: .medium)
                 .parentWidth(width)
-                .frame(height: 180)
+                .frame(height: imageHeight)
                 .clipped()
             
             Group {
@@ -27,7 +30,7 @@ public struct DiscoverCardView: View, Updateable {
                 
                 HStack(spacing: Spacing.sp100) {
                     if let avatarID = store.avatarID {
-                        AsyncZenixImage(mediaID: avatarID)
+                        AsyncZenixImage(mediaID: avatarID, size: .small)
                             .frame(width: 10, height: 10)
                             .clipShape(Circle())
                     }
@@ -60,8 +63,7 @@ public struct DiscoverCardView: View, Updateable {
         }
         .overlay {
             GeometryReader { geo in
-                RoundedRectangle(cornerRadius: Radius.r200)
-                    .stroke(.black.opacity(0.1), lineWidth: 1)
+                Color.clear
                     .onAppear {
                         width = geo.size.width
                     }

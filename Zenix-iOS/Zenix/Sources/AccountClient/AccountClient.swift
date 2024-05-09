@@ -30,8 +30,10 @@ public extension AccountClient {
             isSignedIn: {
                 if let accessToken = keychain.securelyRetrieveString(.accessToken) {
                     do {
-                        _ = try JWTDecoder().decode(jwtToken: accessToken)
-                        return true
+                        guard let token = try JWTDecoder().decode(jwtToken: accessToken) else {
+                            return false
+                        }
+                        return token.expiresAt > .now
                     } catch {
                         return false
                     }
@@ -41,17 +43,17 @@ public extension AccountClient {
             accountInfo: { forceUpdate in
                 if forceUpdate {
                     let response: User.Detail.Response = try await authService.sendRequest(to: UserEndpoint.userInfo)
-                    cache.setValue(response.jsonEncoded, CacheClient.Key.accountInfo.rawValue)
+                    cache.setValue(response.jsonEncoded, CacheClient.Key.accountInfo)
                     return response
                 }
                 
-                if let cached = cache.getValue(CacheClient.Key.accountInfo.rawValue) {
+                if let cached = cache.getValue(CacheClient.Key.accountInfo) {
                     let response = try JSONDecoder().decode(User.Detail.Response.self, from: cached)
                     return response
                 }
                 
                 let response: User.Detail.Response = try await authService.sendRequest(to: UserEndpoint.userInfo)
-                cache.setValue(response.jsonEncoded, CacheClient.Key.accountInfo.rawValue)
+                cache.setValue(response.jsonEncoded, CacheClient.Key.accountInfo)
                 return response
             },
             signIn: { request in
@@ -82,6 +84,7 @@ public extension AccountClient {
             },
             logout: {
                 try await authService.sendAndForget(to: AuthEndpoint.logout)
+//                cache.removeValue(CacheClient.Key.accountInfo)
                 keychain.delete(.refreshToken)
                 keychain.delete(.accessToken)
             }

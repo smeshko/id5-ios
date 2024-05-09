@@ -14,9 +14,12 @@ public struct DiscoverFeature {
         @Presents var search: SearchFeature.State?
         var cards: IdentifiedArrayOf<DiscoverCardFeature.State>
         var path = StackState<Path.State>()
+        var categoriesState = CategoriesFeature.State()
         var error: String?
         var searchQuery: String = ""
         var address: String = ""
+        var leftColumn: IdentifiedArrayOf<DiscoverCardFeature.State> = []
+        var rightColumn: IdentifiedArrayOf<DiscoverCardFeature.State> = []
 
         public init(
             cards: IdentifiedArrayOf<DiscoverCardFeature.State> = []
@@ -32,6 +35,7 @@ public struct DiscoverFeature {
         case didReceivePosts(Result<[Post.List.Response], Error>)
         case didReceiveUserInfo(Result<User.Detail.Response, Error>)
         case cards(IdentifiedActionOf<DiscoverCardFeature>)
+        case categoriesAction(CategoriesFeature.Action)
         
         case didTapSearchButton
         
@@ -44,6 +48,9 @@ public struct DiscoverFeature {
     @Dependency(\.accountClient) var accountClient
     
     public var body: some Reducer<State, Action> {
+        Scope(state: \.categoriesState, action: \.categoriesAction) {
+            CategoriesFeature()
+        }
         Reduce { state, action in
             switch action {
             case .onAppear:
@@ -72,6 +79,11 @@ public struct DiscoverFeature {
                 state.cards = posts
                     .sorted(by: { $0.createdAt.compare($1.createdAt) == .orderedDescending })
                     .map(DiscoverCardFeature.State.init(post:)).identified
+                if state.cards.count > 1 {
+                    let split = state.cards.split()
+                    state.leftColumn = split.first?.identified ?? []
+                    state.rightColumn = split.last?.identified ?? []
+                }
             
             case .didReceivePosts(.failure(let error)):
                 if let error = error as? ZenixError {
@@ -91,6 +103,9 @@ public struct DiscoverFeature {
                 default:
                     break
                 }
+                
+            case .categoriesAction:
+                break
                 
             case .cards, .path, .binding, .didReceiveUserInfo:
                 break
@@ -130,8 +145,26 @@ public extension DiscoverFeature {
     }
 }
 
-extension Array where Element: Identifiable {
-    var identified: IdentifiedArrayOf<Element> {
-        IdentifiedArray(uniqueElements: self)
+private extension IdentifiedArray where Element: Identifiable {
+    func split(into columns: Int = 2) -> [[Element]] {
+        var result: [[Element]] = []
+        
+        var list1: [Element] = []
+        var list2: [Element] = []
+        
+        self.forEach { element in
+            let index = self.firstIndex { $0.id == element.id }
+            
+            if let index = index {
+                if index % 2 == 0  {
+                    list1.append(element)
+                } else {
+                    list2.append(element)
+                }
+            }
+        }
+        result.append(list1)
+        result.append(list2)
+        return result
     }
 }

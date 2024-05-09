@@ -5,6 +5,17 @@ import StyleGuide
 import SwiftUI
 
 public struct AsyncZenixImage: View, Updateable {
+    public enum Size {
+        case small, medium, original
+        var remote: Media.Size {
+            switch self {
+            case .small: .s
+            case .medium: .m
+            case .original: .o
+            }
+        }
+    }
+    
     enum LoadingState: Equatable {
         case done(Image)
         case loading
@@ -12,12 +23,14 @@ public struct AsyncZenixImage: View, Updateable {
     }
     
     private let mediaID: UUID
+    private let size: Size
     @State private var loadingState: LoadingState = .loading
     private var width: CGFloat?
     @Dependency(\.mediaClient) private var mediaClient
     
-    public init(mediaID: UUID) {
+    public init(mediaID: UUID, size: Size = .original) {
         self.mediaID = mediaID
+        self.size = size
     }
     
     public var body: some View {
@@ -32,7 +45,6 @@ public struct AsyncZenixImage: View, Updateable {
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: width)
                     .clipShape(Rectangle())
 
             case .error:
@@ -40,6 +52,7 @@ public struct AsyncZenixImage: View, Updateable {
                     .foregroundStyle(.red)
             }
         }
+        .frame(width: width)
         .clipped()
         .onAppear {
             Task {
@@ -55,7 +68,8 @@ public struct AsyncZenixImage: View, Updateable {
         
         loadingState = .loading
         do {
-            let response = try await mediaClient.download(mediaID)
+            let request = Media.Download.Request(id: mediaID, size: size.remote)
+            let response = try await mediaClient.download(request)
             let image = Image(uiImage: .init(data: response.data) ?? .init())
             loadingState = .done(image)
         } catch {
